@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>台灣散步筆記 · 探索台灣各城市的景點與美食</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    /* 首頁專用：僅為 hero 版面與段落間距，未更動任何共用元件樣式 */
+    .hero {
+      text-align: center;
+      padding-block: var(--space-xl);
+    }
+    .hero h1 {
+      font-size: var(--fs-2xl);
+      margin-bottom: var(--space-sm);
+    }
+    .hero__intro {
+      color: var(--color-text-muted);
+      font-size: var(--fs-lg);
+      margin: 0 auto var(--space-lg);
+      max-width: 40ch;
+    }
+    .home-section {
+      margin-block: var(--space-xl);
+    }
+    .home-section > h2 {
+      font-size: var(--fs-xl);
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="site-title" href="index.html">台灣散步筆記</a>
+      <nav class="nav"><a href="index.html#cities">探索城市</a></nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- 1. Hero：網站名、一句介紹、探索台南按鈕 -->
+    <section class="hero">
+      <h1>台灣散步筆記</h1>
+      <p class="hero__intro">探索台灣各城市的景點與美食店家</p>
+      <a class="btn btn--primary" href="city.html?city=tainan">探索台南</a>
+    </section>
+
+    <!-- 2. 城市入口（nav 錨點目標）：由 home.js 填入 #cityGrid -->
+    <section class="home-section" id="cities">
+      <h2>探索城市</h2>
+      <div class="city-grid" id="cityGrid"></div>
+    </section>
+
+    <!-- 3. 本期精選：由 home.js 隨機填入 #featuredGrid -->
+    <section class="home-section">
+      <h2>台南精選</h2>
+      <div class="card-grid" id="featuredGrid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">台灣散步筆記 · 探索台灣各城市的景點與美食</div>
+  </footer>
+
+  <script src="data/data.js"></script>
+  <script src="assets/js/shared.js"></script>
+  <script src="assets/js/home.js"></script>
+</body>
+</html>

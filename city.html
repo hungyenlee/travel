@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>城市旅遊 · 台灣散步筆記</title>
+  <!-- Leaflet 地圖樣式（唯一的外部相依） -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <!-- 全站共用設計系統 -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <!-- 頁首（與其他頁一致） -->
+  <header class="site-header">
+    <div class="container">
+      <a class="site-title" href="index.html">台灣散步筆記</a>
+      <nav class="nav"><a href="index.html#cities">探索城市</a></nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!--
+      以下皆為「插槽」容器，實際內容由 city.js 依城市資料動態填入。
+      這樣做可讓 HTML 保持乾淨，也方便 city.js 在切換篩選時只重繪需要的區塊。
+    -->
+
+    <!-- 頁面標題與副標（city.js 填入城市名） -->
+    <h1 id="page-title"></h1>
+    <p id="page-subtitle"></p>
+
+    <!-- 資料檢查警告橫幅插槽（ADR 0001，給維護者看；沒問題時保持空白） -->
+    <div id="data-warning-slot"></div>
+
+    <!-- 城市不存在或尚未開放時，改在這裡顯示友善訊息 -->
+    <div id="unavailable-slot"></div>
+
+    <!-- 以下區塊只有在城市「可瀏覽」時才會由 city.js 顯示 -->
+
+    <!-- 篩選列插槽（city.js 產生各組篩選按鈕） -->
+    <div class="filter-bar" id="filter-bar" hidden></div>
+
+    <!-- 篩選結果摘要「共收錄 N 個地點｜景點 X｜美食 Y」 -->
+    <p id="summary" hidden></p>
+
+    <!-- 地圖與圖例 -->
+    <div class="map" id="map" hidden></div>
+    <div class="map-legend" id="map-legend" hidden>
+      <span class="map-legend__item">
+        <span class="map-legend__dot map-legend__dot--attraction"></span>景點
+      </span>
+      <span class="map-legend__item">
+        <span class="map-legend__dot map-legend__dot--restaurant"></span>美食
+      </span>
+    </div>
+
+    <!-- 地點卡片列表 -->
+    <div class="card-grid" id="list"></div>
+  </main>
+
+  <!-- 手機版：固定於底部的地點預覽卡（預設隱藏，點地圖標記才顯示） -->
+  <div class="map-preview" id="map-preview" hidden></div>
+
+  <!-- 頁尾（與其他頁一致） -->
+  <footer class="site-footer">
+    <div class="container">台灣散步筆記 · 探索台灣各城市的景點與美食</div>
+  </footer>
+
+  <!-- 載入順序：Leaflet → 資料 → 共用工具 → 本頁邏輯 -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="data/data.js"></script>
+  <script src="assets/js/shared.js"></script>
+  <script src="assets/js/city.js"></script>
+</body>
+</html>

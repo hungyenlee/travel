@@ -1,0 +1,511 @@
+/* ============================================================
+ * style.css — 台灣散步筆記 共用樣式與設計系統
+ * ============================================================
+ * 這是全站共用的樣式表，供 Phase 2 各頁面套用。
+ * 行動優先（mobile-first），桌機斷點為 min-width: 768px。
+ *
+ * ------------------------------------------------------------
+ * 類別契約（CLASS CONTRACT）— 頁面請只使用以下類別名稱：
+ * ------------------------------------------------------------
+ * 版面 Layout
+ *   .container        內容置中的最大寬度容器
+ *   .site-header      頁首橫條（含網站名與導覽）
+ *   .nav              頁首內的導覽連結列
+ *   .site-footer      頁尾
+ *
+ * 卡片 Cards
+ *   .card-grid        響應式卡片格線容器
+ *   .card             單張卡片（景點／店家）
+ *   .card-img         卡片圖片，object-fit:cover，固定 4:3
+ *   .card-body        卡片文字區
+ *   .card-title       卡片標題（地點名）
+ *   .card-meta        卡片次要資訊（行政區、分類等）
+ *
+ * 標籤與徽章 Tags / Badges
+ *   .tag              特色標籤／分類的小標
+ *   .tag--attraction  景點色（藍）標籤
+ *   .tag--restaurant  店家色（橘）標籤
+ *   .badge            狀態徽章（如「即將新增」「需門票」）
+ *
+ * 按鈕 Buttons
+ *   .btn              基本按鈕
+ *   .btn--primary     主要動作按鈕（強調色）
+ *
+ * 篩選列 Filter bar
+ *   .filter-bar       篩選列容器
+ *   .filter-group     一組篩選（如「行政區」一組）
+ *   .filter-btn       單顆篩選按鈕
+ *   .filter-btn.is-active  作用中的篩選按鈕
+ *
+ * 城市入口 City entry
+ *   .city-grid        城市卡片格線
+ *   .city-card        單張城市卡片
+ *   .city-card--disabled  即將新增（灰階、不可點）
+ *
+ * 詳細頁 Detail page
+ *   .detail           詳細頁外層（桌機兩欄／手機堆疊）
+ *   .detail-media     詳細頁圖片欄
+ *   .detail-info      詳細頁資訊欄
+ *
+ * 空狀態 Empty state
+ *   .empty-state      篩選無結果時的提示區
+ *
+ * 警告橫幅 Warning banner（給維護者，見 ADR 0001）
+ *   .data-warning     資料含允許清單外用詞時的提示橫幅
+ *
+ * 地圖 Map
+ *   .map              Leaflet 地圖容器（桌機 60vh／手機 50vh）
+ *   .map-legend       地圖圖例（景點藍／店家橘）
+ *   .map-preview      手機版固定於底部的地點預覽卡
+ * ============================================================ */
+
+/* ---------- 設計權杖 Design tokens ---------- */
+:root {
+  /* 色彩 palette — 清爽、現代、友善的旅遊風 */
+  --color-bg:            #f8f9fa;   /* 頁面底色 */
+  --color-surface:       #ffffff;   /* 卡片／面板底色 */
+  --color-text:          #212529;   /* 主要文字 */
+  --color-text-muted:    #6c757d;   /* 次要文字 */
+  --color-border:        #e0e3e7;   /* 邊框、分隔線 */
+
+  --color-primary:       #0d9488;   /* 品牌強調色（teal） */
+  --color-primary-dark:  #0f766e;   /* 強調色深色（hover） */
+
+  /* 地點類型／地圖標記色（全站共用，必填） */
+  --color-attraction:    #2563eb;   /* 景點 = 藍 */
+  --color-attraction-bg: #dbeafe;   /* 景點淺底 */
+  --color-restaurant:    #ea580c;   /* 店家 = 橘 */
+  --color-restaurant-bg: #ffedd5;   /* 店家淺底 */
+
+  --color-warning:       #b45309;   /* 警告文字 */
+  --color-warning-bg:    #fef3c7;   /* 警告底色 */
+  --color-warning-border:#f59e0b;   /* 警告邊框 */
+
+  /* 間距刻度 spacing scale */
+  --space-xs:  0.25rem;
+  --space-sm:  0.5rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2.5rem;
+
+  /* 圓角 border-radius */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  /* 字級 font sizes */
+  --fs-sm:   0.85rem;
+  --fs-base: 1rem;
+  --fs-lg:   1.15rem;
+  --fs-xl:   1.5rem;
+  --fs-2xl:  2rem;
+
+  /* 陰影 shadow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.12);
+
+  /* 版面 */
+  --container-max: 1100px;
+}
+
+/* ---------- 基礎 Base ---------- */
+* { box-sizing: border-box; }
+
+/* hidden 屬性保險：class 上的 display（如 .map-legend{display:flex}）會蓋掉
+ * 瀏覽器內建的 [hidden]{display:none}，故明確以 !important 確保 hidden 生效。 */
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto,
+               "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", sans-serif;
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+img { max-width: 100%; display: block; }
+
+a { color: var(--color-primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+h1, h2, h3 { line-height: 1.25; margin: 0 0 var(--space-md); }
+
+/* ---------- 版面 Layout ---------- */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--space-md);
+}
+
+.site-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+.site-header .container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding-block: var(--space-md);
+}
+.site-header .site-title,
+.site-header .brand {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  align-items: center;
+}
+.nav a {
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  padding: var(--space-xs) 0;
+}
+.nav a:hover,
+.nav a.is-active { color: var(--color-primary); text-decoration: none; }
+
+.site-footer {
+  margin-top: var(--space-xl);
+  padding-block: var(--space-lg);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+/* ---------- 卡片 Cards ---------- */
+.card-grid {
+  display: grid;
+  gap: var(--space-lg);
+  grid-template-columns: 1fr;               /* 手機：單欄 */
+}
+@media (min-width: 768px) {
+  .card-grid { grid-template-columns: repeat(3, 1fr); } /* 桌機：三欄 */
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.card-img {
+  width: 100%;
+  aspect-ratio: 4 / 3;          /* 固定 4:3 */
+  object-fit: cover;
+  background: var(--color-border);
+}
+
+.card-body {
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  flex: 1;
+}
+.card-title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  margin: 0;
+}
+.card-meta {
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-sm);
+}
+/* 整張卡片是可點的連結：清掉底線與繼承色 */
+a.card { color: inherit; text-decoration: none; }
+a.card:hover { text-decoration: none; }
+.card-desc {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: #495057;
+}
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+.card-cta {
+  margin-top: auto;   /* 按鈕永遠貼卡片底部，卡片高度不一時仍對齊 */
+  align-self: flex-start;
+}
+
+/* ---------- 標籤與徽章 Tags / Badges ---------- */
+.tag {
+  display: inline-block;
+  font-size: var(--fs-sm);
+  line-height: 1;
+  padding: 0.35em 0.7em;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+.tag--attraction {
+  background: var(--color-attraction-bg);
+  color: var(--color-attraction);
+  border-color: transparent;
+}
+.tag--restaurant {
+  background: var(--color-restaurant-bg);
+  color: var(--color-restaurant);
+  border-color: transparent;
+}
+
+.badge {
+  display: inline-block;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.35em 0.7em;
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ---------- 按鈕 Buttons ---------- */
+.btn {
+  display: inline-block;
+  font: inherit;
+  font-size: var(--fs-base);
+  line-height: 1.2;
+  padding: 0.6em 1.2em;
+  min-height: 44px;                 /* 手機觸控目標 */
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.btn:hover { background: var(--color-bg); text-decoration: none; }
+.btn--primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+.btn--primary:hover { background: var(--color-primary-dark); border-color: var(--color-primary-dark); }
+
+/* ---------- 篩選列 Filter bar ---------- */
+.filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  margin-block: var(--space-lg);
+}
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.filter-group__label {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-right: var(--space-xs);
+}
+.filter-btn {
+  font: inherit;
+  font-size: var(--fs-sm);
+  line-height: 1;
+  padding: 0.5em 0.9em;
+  min-height: 40px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.filter-btn:hover { background: var(--color-bg); }
+.filter-btn.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+/* ---------- 城市入口 City entry ---------- */
+.city-grid {
+  display: grid;
+  gap: var(--space-lg);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  .city-grid { grid-template-columns: repeat(3, 1fr); }
+}
+.city-card {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: var(--space-xl) var(--space-lg);
+  text-align: center;
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--color-text);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+a.city-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+}
+.city-card--disabled {
+  filter: grayscale(1);
+  opacity: 0.55;
+  pointer-events: none;         /* 即將新增：不可點 */
+  cursor: default;
+}
+
+/* ---------- 詳細頁 Detail page ---------- */
+.detail {
+  display: grid;
+  gap: var(--space-lg);
+  grid-template-columns: 1fr;    /* 手機：堆疊 */
+  margin-block: var(--space-lg);
+}
+@media (min-width: 768px) {
+  .detail { grid-template-columns: 1fr 1fr; align-items: start; } /* 桌機：兩欄 */
+}
+.detail-media img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+.detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* ---------- 空狀態 Empty state ---------- */
+.empty-state {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: var(--space-xl) var(--space-md);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+/* ---------- 警告橫幅 Warning banner（給維護者，ADR 0001） ---------- */
+.data-warning {
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning-border);
+  border-left-width: 5px;
+  color: var(--color-warning);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  margin-block: var(--space-md);
+  font-size: var(--fs-sm);
+}
+
+/* ---------- 地圖 Map ---------- */
+.map {
+  width: 100%;
+  height: 50vh;                  /* 手機 */
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+@media (min-width: 768px) {
+  .map { height: 60vh; }         /* 桌機 */
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+}
+.map-legend__item { display: inline-flex; align-items: center; gap: var(--space-xs); }
+.map-legend__dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.map-legend__dot--attraction { background: var(--color-attraction); }
+.map-legend__dot--restaurant { background: var(--color-restaurant); }
+
+/* 手機版：固定於畫面底部的地點預覽卡 */
+.map-preview {
+  position: fixed;
+  left: var(--space-md);
+  right: var(--space-md);
+  bottom: var(--space-md);
+  z-index: 1000;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-md);
+}
+.map-preview[hidden] { display: none; }
+@media (min-width: 768px) {
+  /* 桌機不用固定底部卡；如需顯示可改為靜態面板 */
+  .map-preview {
+    position: static;
+    left: auto; right: auto; bottom: auto;
+    box-shadow: var(--shadow-sm);
+  }
+}
+
+/* 地圖預覽卡內部版面（由 shared.js 的 renderPreview 產生） */
+.map-preview__inner,
+.map-preview { display: flex; gap: var(--space-md); align-items: flex-start; }
+.map-preview__img {
+  width: 96px;
+  flex: 0 0 96px;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+.map-preview__content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-xs); }
+.map-preview__title { font-weight: 700; font-size: var(--fs-lg); }
+.map-preview__meta { font-size: var(--fs-sm); color: var(--color-text-muted); }
+.map-preview__desc { margin: 0; font-size: var(--fs-sm); color: #495057; }
+.map-preview__dishes { font-size: var(--fs-sm); }
+.map-preview__tags { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
+.map-preview__content .btn { margin-top: var(--space-xs); align-self: flex-start; }
+/* 關閉鈕（可選用） */
+.map-preview__close {
+  position: absolute; top: var(--space-xs); right: var(--space-sm);
+  border: none; background: none; font-size: 1.4rem; line-height: 1;
+  color: var(--color-text-muted); cursor: pointer;
+}
