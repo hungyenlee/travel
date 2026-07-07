@@ -1,0 +1,11 @@
+# 統一以 LF 儲存並簽出，消除跨平台 CRLF/LF 差異與 commit 時的
+# "LF will be replaced by CRLF" 警告。純 web 專案在 Windows 上用 LF 無妨。
+* text=auto eol=lf
+
+# 二進位檔不做換行轉換。
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.webp binary
