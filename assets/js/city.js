@@ -523,7 +523,12 @@
       });
     } else {
       // 手機：點圓點顯示底部預覽卡（內含 CTA 連結，由 renderPreview 產生）。
-      marker.on("click", function () { showPreview(place); });
+      // 注意：Leaflet 的 circleMarker 被點擊時，click 會一併觸發地圖的 click
+      // （= hidePreview），使剛顯示的預覽卡立刻被收掉。故在此擋下傳遞。
+      marker.on("click", function (e) {
+        L.DomEvent.stopPropagation(e);
+        showPreview(place);
+      });
     }
   }
 
