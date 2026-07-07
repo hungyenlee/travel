@@ -48,6 +48,10 @@
 
 - **`[hidden]` 保險規則**：`style.css` 補上 `[hidden] { display: none !important; }`。原因是 `.map-legend`、`.filter-bar` 等 class 上的 `display` 會蓋掉瀏覽器內建的 `[hidden]{display:none}`，導致這些元素在該隱藏時（例如「即將新增」城市頁）仍露出。
 
+## 開發流程
+
+22. **受保護的 PR 流程**：不直接 commit 到 `main`，改走 Issue（限 bug／功能／重構）→ Branch（`<類型>/<說明>`）→ 實作＋preview 實測＋補文件 → PR（`Closes #n`）→ 你 review + **Squash merge**。`main` 開啟分支保護、連管理員不可繞過，並以最小 CI（`node --check` + HTML 引用檢查）為合併必要條件。細則見 [CONTRIBUTING.md](../CONTRIBUTING.md)、理由見 [ADR-0005](./adr/0005-dev-workflow.md)。
+
 ## 尚未採用（可日後再議）
 
-- **git 版本控制**：目前資料夾不是 git 專案，修改沒有版本歷史。日後若要可回溯每次變更，可再初始化。
+- （原「git 版本控制」項已完成：專案已納入 git，並託管於 GitHub、以 GitHub Pages 部署。）
