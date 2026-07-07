@@ -77,6 +77,9 @@
   --color-restaurant:    #ea580c;   /* 店家 = 橘 */
   --color-restaurant-bg: #ffedd5;   /* 店家淺底 */
 
+  --color-pin:           #7c3aed;   /* 已固定 = 紫（ADR 0004，地圖外環＋卡片粗框） */
+  --color-pin-bg:        #ede9fe;   /* 已固定淺底 */
+
   --color-warning:       #b45309;   /* 警告文字 */
   --color-warning-bg:    #fef3c7;   /* 警告底色 */
   --color-warning-border:#f59e0b;   /* 警告邊框 */
@@ -212,6 +215,12 @@ h1, h2, h3 { line-height: 1.25; margin: 0 0 var(--space-md); }
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
 }
+/* 被固定的地點卡片（ADR 0004）：紫色粗框 + 淡紫外光，浮到列表最前面。 */
+.card--pinned {
+  border-color: var(--color-pin);
+  border-width: 3px;
+  box-shadow: 0 0 0 1px var(--color-pin), var(--shadow-md);
+}
 
 .card-img {
   width: 100%;
@@ -313,6 +322,13 @@ a.card:hover { text-decoration: none; }
   color: #fff;
 }
 .btn--primary:hover { background: var(--color-primary-dark); border-color: var(--color-primary-dark); }
+/* 「清除固定（N）」：紫色外框，與「已固定」的視覺語言一致（ADR 0004）。 */
+.btn--pin {
+  border-color: var(--color-pin);
+  color: var(--color-pin);
+  background: var(--color-pin-bg);
+}
+.btn--pin:hover { background: #ddd6fe; }
 
 /* ---------- 篩選列 Filter bar ---------- */
 .filter-bar {
@@ -462,6 +478,27 @@ a.city-card:hover {
 }
 .map-legend__dot--attraction { background: var(--color-attraction); }
 .map-legend__dot--restaurant { background: var(--color-restaurant); }
+/* 圖例：已固定＝任一類型色的圓點外加紫色粗環（ADR 0004）。 */
+.map-legend__dot--pin {
+  background: var(--color-text-muted);
+  border: 3px solid var(--color-pin);
+  width: 16px; height: 16px;
+}
+
+/* 地圖上的「顯示全部」控制項（Leaflet 自訂控制項，ADR 0004）。 */
+.map-showall-btn {
+  font: inherit;
+  font-size: var(--fs-sm);
+  line-height: 1;
+  padding: 0.5em 0.8em;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+.map-showall-btn:hover { background: var(--color-bg); }
 
 /* 手機版：固定於畫面底部的地點預覽卡 */
 .map-preview {
@@ -502,7 +539,34 @@ a.city-card:hover {
 .map-preview__desc { margin: 0; font-size: var(--fs-sm); color: #495057; }
 .map-preview__dishes { font-size: var(--fs-sm); }
 .map-preview__tags { display: flex; flex-wrap: wrap; gap: var(--space-xs); }
-.map-preview__content .btn { margin-top: var(--space-xs); align-self: flex-start; }
+/* CTA 與「固定」鈕並排（ADR 0004）。 */
+.map-preview__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  margin-top: var(--space-xs);
+}
+.map-preview__actions .btn { margin-top: 0; }
+/* 「固定／取消固定」切換鈕：未固定為紫色外框，已固定為紫色實心。 */
+.map-preview__pin {
+  font: inherit;
+  font-size: var(--fs-sm);
+  line-height: 1.2;
+  padding: 0.5em 0.9em;
+  min-height: 40px;
+  border: 1px solid var(--color-pin);
+  border-radius: var(--radius-md);
+  background: var(--color-pin-bg);
+  color: var(--color-pin);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.map-preview__pin:hover { background: #ddd6fe; }
+.map-preview__pin.is-pinned {
+  background: var(--color-pin);
+  color: #fff;
+}
 /* 關閉鈕（可選用） */
 .map-preview__close {
   position: absolute; top: var(--space-xs); right: var(--space-sm);

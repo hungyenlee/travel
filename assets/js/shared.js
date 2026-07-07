@@ -19,8 +19,10 @@
  *   escapeHtml(str)          文字轉義，避免破壞 HTML
  *   imageTag(place, cls)     產生 <img>，缺圖自動退回佔位圖
  *   tagChips(place)          產生特色標籤小標（依類型上色）
- *   renderCard(place)        產生列表／精選用的整張地點卡片（整張可點進詳細頁）
- *   renderPreview(place)     產生地圖預覽卡的內容（景點／店家欄位不同）
+ *   renderCard(place, pinned)     產生列表／精選用的整張地點卡片（整張可點進詳細頁）
+ *                                 pinned=true 時加 card--pinned 粗框標示（僅城市頁列表使用）
+ *   renderPreview(place, pinned)  產生地圖預覽卡的內容（景點／店家欄位不同）
+ *                                 內含「固定／取消固定」切換鈕，由呼叫端接事件
  *   findTaxonomyViolations(list)  檢查地點是否用了 taxonomy 清單外的分類／標籤
  * ============================================================
  */
@@ -80,13 +82,14 @@ function tagChips(place) {
   }).join("");
 }
 
-/* 列表／精選卡片：整張 <a> 可點，點任意處都進詳細頁（含圖片）。 */
-function renderCard(place) {
+/* 列表／精選卡片：整張 <a> 可點，點任意處都進詳細頁（含圖片）。
+ * pinned=true 時加上 card--pinned（紫色粗框），用於城市頁被固定的地點。 */
+function renderCard(place, pinned) {
   var cats = (place.categories || []).join("｜");
   var cta = isAttraction(place) ? "查看詳細資訊" : "查看店家資訊";
   var meta = escapeHtml(getCityName(place.city)) + "・" + escapeHtml(place.district);
   return '' +
-    '<a class="card" href="' + detailUrl(place.id) + '">' +
+    '<a class="card' + (pinned ? " card--pinned" : "") + '" href="' + detailUrl(place.id) + '">' +
       imageTag(place, "card-img") +
       '<div class="card-body">' +
         '<h3 class="card-title">' + escapeHtml(place.name) + "</h3>" +
@@ -98,8 +101,9 @@ function renderCard(place) {
     "</a>";
 }
 
-/* 地圖預覽卡內容：景點與店家顯示的欄位不同（見規劃書「地圖預覽卡片」）。 */
-function renderPreview(place) {
+/* 地圖預覽卡內容：景點與店家顯示的欄位不同（見規劃書「地圖預覽卡片」）。
+ * pinned 決定「固定／取消固定」鈕的文字與樣式；點擊事件由 city.js 接（見 ADR 0004）。 */
+function renderPreview(place, pinned) {
   var cta = isAttraction(place) ? "查看詳細資訊" : "查看店家資訊";
   var meta = escapeHtml(getCityName(place.city)) + "・" + escapeHtml(place.district);
   var body = "";
@@ -124,7 +128,13 @@ function renderPreview(place) {
     '<div class="map-preview__content">' +
       '<div class="map-preview__title">' + escapeHtml(place.name) + "</div>" +
       body +
-      '<a class="btn btn--primary" href="' + detailUrl(place.id) + '">' + cta + "</a>" +
+      '<div class="map-preview__actions">' +
+        '<a class="btn btn--primary" href="' + detailUrl(place.id) + '">' + cta + "</a>" +
+        '<button type="button" class="map-preview__pin' + (pinned ? " is-pinned" : "") +
+          '" data-id="' + escapeHtml(place.id) + '">' +
+          (pinned ? "取消固定" : "固定") +
+        "</button>" +
+      "</div>" +
     "</div>";
 }
 

@@ -31,8 +31,16 @@
   var cityPlaces = [];   // 該城市的所有地點（未篩選）
   var map = null;        // Leaflet 地圖實例
   var markerLayer = null;// 放所有標記的圖層（重繪時整層清空）
-  var colors = { attraction: "#2563eb", restaurant: "#ea580c" }; // 由 CSS 變數覆蓋
+  var colors = { attraction: "#2563eb", restaurant: "#ea580c", pin: "#7c3aed" }; // 由 CSS 變數覆蓋
   var isDesktop = false; // 是否為桌機寬度（用來決定預覽互動方式）
+
+  /* 固定地點（ADR 0004）：以地點 id 當 key 的集合，跨類型、可多個。
+   * 只存記憶體，重新整理／離開頁面即清空（第一版不做持久化）。 */
+  var pinnedIds = {};
+  var clearPinsBtn = null;  // 「清除固定（N）」按鈕，只有在有固定時才顯示。
+
+  /* 地圖縮放（ADR 0004）：只在首次渲染自動框選一次；之後篩選／固定都不再自動縮放。 */
+  var didInitialFit = false;
 
   /* 常用 DOM 節點 */
   var els = {};
@@ -166,12 +174,20 @@
     clearBtn.textContent = "清除篩選";
     clearBtn.addEventListener("click", clearFilters);
 
+    // 「清除固定」：與篩選獨立（ADR 0004）；只有在有固定時才顯示，由 updatePinControls 控制。
+    clearPinsBtn = document.createElement("button");
+    clearPinsBtn.type = "button";
+    clearPinsBtn.className = "btn btn--pin";
+    clearPinsBtn.addEventListener("click", clearPins);
+
     els.filterBar.innerHTML = "";
     els.filterBar.appendChild(typeGroup);
     els.filterBar.appendChild(districtGroup);
     els.filterBar.appendChild(categoryGroup);
     els.filterBar.appendChild(tagGroup);
     els.filterBar.appendChild(clearBtn);
+    els.filterBar.appendChild(clearPinsBtn);
+    updatePinControls(); // 依目前固定數更新「清除固定（N）」的文字與顯示。
   }
 
   /* 把字串包成 {value,label} 選項物件。 */
@@ -235,7 +251,8 @@
     applyFilters();
   }
 
-  /* 清除篩選：全部回到「全部」（空值），並重畫整個篩選列與結果。 */
+  /* 清除篩選：全部回到「全部」（空值），並重畫整個篩選列與結果。
+   * 注意：只清篩選，不動固定（兩者獨立，見 ADR 0004）。 */
   function clearFilters() {
     filters.type = "";
     filters.district = "";
@@ -244,6 +261,61 @@
     hidePreview();
     buildFilterBar(); // 重建以刷新 is-active 狀態。
     applyFilters();
+  }
+
+  /* ============================================================
+   * 固定地點（ADR 0004）
+   *   固定＝讓某地點在切換篩選後仍留在「地圖」上（即使被篩掉）。
+   *   只影響地圖與「該地點若本來就在列表裡」的排序／標示；
+   *   列表內容與摘要數字仍嚴格等於篩選結果。
+   * ============================================================ */
+
+  function isPinned(id) { return !!pinnedIds[id]; }
+
+  function countPins() {
+    var n = 0;
+    for (var k in pinnedIds) { if (pinnedIds.hasOwnProperty(k)) n++; }
+    return n;
+  }
+
+  /* 切換單一地點的固定狀態（由預覽卡上的按鈕觸發）。 */
+  function togglePin(place) {
+    if (pinnedIds[place.id]) delete pinnedIds[place.id];
+    else pinnedIds[place.id] = true;
+
+    applyFilters();       // 重畫地圖標記與列表（applyFilters 會先收起預覽卡）。
+    updatePinControls();  // 更新「清除固定（N）」。
+    // 重新開回這張預覽卡，讓按鈕文字（固定／取消固定）即時反映新狀態。
+    if (isDesktop) showDesktopPreview(place);
+    else showPreview(place);
+  }
+
+  /* 一鍵清除所有固定（只有在有固定時才會出現這顆按鈕）。 */
+  function clearPins() {
+    pinnedIds = {};
+    hidePreview();
+    applyFilters();
+    updatePinControls();
+  }
+
+  /* 依目前固定數更新「清除固定（N）」按鈕的文字與顯示。 */
+  function updatePinControls() {
+    if (!clearPinsBtn) return;
+    var n = countPins();
+    clearPinsBtn.textContent = "清除固定（" + n + "）";
+    clearPinsBtn.hidden = n === 0;
+  }
+
+  /* 篩選結果 ∪ 已固定地點（去重、保序：先篩選結果、再補上不在其中的固定地點）。
+   * 固定地點一定屬於本城市（pinnedIds 只在本頁累積、重整即清空）。 */
+  function withPinned(list) {
+    var seen = {};
+    var out = [];
+    list.forEach(function (p) { seen[p.id] = true; out.push(p); });
+    cityPlaces.forEach(function (p) {
+      if (isPinned(p.id) && !seen[p.id]) { seen[p.id] = true; out.push(p); }
+    });
+    return out;
   }
 
   /* ============================================================
@@ -293,7 +365,13 @@
       return;
     }
     els.list.classList.add("card-grid");
-    els.list.innerHTML = list.map(renderCard).join("");
+    // 被固定的卡片排到最前面（穩定排序，其餘維持原順序），並以粗框標示（ADR 0004）。
+    var ordered = list.slice().sort(function (a, b) {
+      return (isPinned(b.id) ? 1 : 0) - (isPinned(a.id) ? 1 : 0);
+    });
+    els.list.innerHTML = ordered.map(function (p) {
+      return renderCard(p, isPinned(p.id));
+    }).join("");
   }
 
   /* ============================================================
@@ -305,8 +383,10 @@
     var cs = getComputedStyle(document.documentElement);
     var a = cs.getPropertyValue("--color-attraction").trim();
     var r = cs.getPropertyValue("--color-restaurant").trim();
+    var p = cs.getPropertyValue("--color-pin").trim();
     if (a) colors.attraction = a;
     if (r) colors.restaurant = r;
+    if (p) colors.pin = p;
   }
 
   /* 建立地圖與底圖（OpenStreetMap）；此時尚未放標記。 */
@@ -319,6 +399,23 @@
     }).addTo(map);
     markerLayer = L.layerGroup().addTo(map);
 
+    // 「顯示全部」控制項（ADR 0004）：取消自動縮放後，讓使用者手動框回全覽。
+    var ShowAll = L.Control.extend({
+      options: { position: "topright" },
+      onAdd: function () {
+        var btn = L.DomUtil.create("button", "map-showall-btn");
+        btn.type = "button";
+        btn.textContent = "顯示全部";
+        L.DomEvent.disableClickPropagation(btn); // 別讓按鈕點擊被地圖當成點空白處。
+        L.DomEvent.on(btn, "click", function (e) {
+          L.DomEvent.stop(e);
+          fitAllVisible();
+        });
+        return btn;
+      },
+    });
+    map.addControl(new ShowAll());
+
     // 點地圖空白處收起預覽卡（桌機、手機皆適用）。
     map.on("click", hidePreview);
 
@@ -330,26 +427,34 @@
   }
 
   /*
-   * 依篩選結果重繪標記，並自動框選（fitBounds）到這些地點。
-   *   - 多於一個：fitBounds 含 padding。
-   *   - 恰一個：center + 合理縮放。
-   *   - 零個：不動視野（列表會顯示空狀態）。
+   * 重繪標記：畫「篩選結果 ∪ 已固定」（ADR 0004）。
+   *   - 固定的圓點保留類型色，另加紫色粗外環並略放大，以資辨識。
+   *   - 視野只在「首次渲染」自動框選一次；之後篩選／固定都不再自動縮放，
+   *     使用者要重新全覽時按地圖上的「顯示全部」。
    */
   function renderMarkers(list) {
     markerLayer.clearLayers();
     hidePreview(); // 每次重繪先收起預覽卡，避免指向已消失的標記。
 
-    if (!list.length) return;
+    var display = withPinned(list);
+    if (!display.length) return;
 
     var latlngs = [];
-    list.forEach(function (place) {
+    display.forEach(function (place) {
       var latlng = [place.location.lat, place.location.lng];
       latlngs.push(latlng);
 
       var color = isAttraction(place) ? colors.attraction : colors.restaurant;
-      var marker = L.circleMarker(latlng, {
+      var pinned = isPinned(place.id);
+      var marker = L.circleMarker(latlng, pinned ? {
+        radius: 11,          // 略放大
+        color: colors.pin,   // 紫色粗外環＝已固定
+        weight: 4,
+        fillColor: color,    // 內填維持類型色（看得出景點／美食）
+        fillOpacity: 1,
+      } : {
         radius: 9,
-        color: "#ffffff",   // 白色外框讓標記在地圖上更清楚
+        color: "#ffffff",    // 白色外框讓標記在地圖上更清楚
         weight: 2,
         fillColor: color,
         fillOpacity: 1,
@@ -359,12 +464,29 @@
       wireMarker(marker, place); // 需在 addTo 之後（桌機要取得標記的 DOM 元素）
     });
 
-    // 自動框選視野。
+    // 只在首次渲染自動框選一次。
+    if (!didInitialFit) {
+      fitToLatLngs(latlngs);
+      didInitialFit = true;
+    }
+  }
+
+  /* 依一組座標框選視野：單點置中縮放，多點 fitBounds 含 padding。 */
+  function fitToLatLngs(latlngs) {
+    if (!latlngs.length) return;
     if (latlngs.length === 1) {
       map.setView(latlngs[0], 15);
     } else {
       map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40] });
     }
+  }
+
+  /* 「顯示全部」按鈕：手動把視野框回「篩選結果 ∪ 已固定」。 */
+  function fitAllVisible() {
+    var display = withPinned(getFilteredPlaces());
+    fitToLatLngs(display.map(function (p) {
+      return [p.location.lat, p.location.lng];
+    }));
   }
 
   /*
@@ -423,8 +545,15 @@
     p.style.bottom = "auto";
     p.style.width = "300px";
     p.style.zIndex = "1000";
-    p.innerHTML = renderPreview(place);
+    p.innerHTML = renderPreview(place, isPinned(place.id));
+    wirePinButton(place);
     p.hidden = false;
+  }
+
+  /* 接上預覽卡裡的「固定／取消固定」按鈕（桌機、手機共用）。 */
+  function wirePinButton(place) {
+    var btn = els.preview.querySelector(".map-preview__pin");
+    if (btn) btn.addEventListener("click", function () { togglePin(place); });
   }
 
   /* ============================================================
@@ -436,9 +565,10 @@
     els.preview.innerHTML =
       '<button type="button" class="map-preview__close" ' +
       'aria-label="關閉">&times;</button>' +
-      renderPreview(place);
+      renderPreview(place, isPinned(place.id));
     var closeBtn = els.preview.querySelector(".map-preview__close");
     if (closeBtn) closeBtn.addEventListener("click", hidePreview);
+    wirePinButton(place);
     els.preview.hidden = false;
   }
 

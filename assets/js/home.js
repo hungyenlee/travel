@@ -43,9 +43,11 @@ function renderFeatured() {
   var pickedAttractions = pickRandom(attractions, 3);
   var pickedRestaurants = pickRandom(restaurants, 3);
 
-  // 景點在前、店家在後，逐張以 shared.js 的 renderCard 產生卡片
+  // 景點在前、店家在後，逐張以 shared.js 的 renderCard 產生卡片。
+  // 注意：不可寫成 .map(renderCard)，否則 map 會把索引當成第二參數 pinned 傳入，
+  // 導致部分卡片誤加 card--pinned 粗框；首頁精選一律非固定狀態。
   var featured = pickedAttractions.concat(pickedRestaurants);
-  grid.innerHTML = featured.map(renderCard).join("");
+  grid.innerHTML = featured.map(function (p) { return renderCard(p); }).join("");
 }
 
 /* ---------- 進入點 ---------- */
