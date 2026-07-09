@@ -9,6 +9,7 @@
 - **首頁**：城市入口 + 台南隨機精選景點與店家。
 - **城市頁**：互動地圖（Leaflet + OpenStreetMap）＋篩選＋卡片列表，三者連動。景點藍點、美食橘點。
 - **詳細頁**：景點／店家共用版型，含地址、營業時間、Google 地圖連結。
+- **我的行程（行程規劃）**：把想去的地點加進命名行程、分配到「第 N 天」，地圖跟著選中的天顯示編號標記並與清單雙向連動。資料只存在你的瀏覽器（localStorage），不需帳號、不上傳。
 
 ## 如何瀏覽
 
@@ -24,15 +25,19 @@
 
 ```text
 index.html  city.html  detail.html   頁面（留在根目錄）
+plan.html                            我的行程（行程規劃）頁
 README.md   CONTEXT.md               說明、領域用語表
 assets/
 ├── css/
 │   └── style.css       全站樣式與設計系統
 ├── js/
-│   ├── shared.js       三頁共用的工具函式
+│   ├── shared.js       共用工具函式（含 plan.js 重用的地圖低階工具）
 │   ├── home.js         首頁邏輯
 │   ├── city.js         城市頁邏輯（地圖、篩選、預覽卡）
-│   └── detail.js       詳細頁邏輯
+│   ├── detail.js       詳細頁邏輯
+│   ├── trip-store.js   行程資料層（localStorage，key tsn.trips.v1）
+│   ├── trip-picker.js  「加入行程」按鈕與選單（詳細頁／城市頁共用）
+│   └── plan.js         我的行程頁邏輯（地圖＋清單＋天數）
 └── images/             圖片（含缺圖用的 placeholder.svg）
 data/
 └── data.js             ★ 內容資料（地點清冊 + 允許清單）
@@ -56,5 +61,5 @@ docs/
 
 - [`CONTEXT.md`](CONTEXT.md)：術語定義（地點、景點、店家、允許清單、遊客 vs 維護者⋯⋯）。
 - [`docs/decisions.md`](docs/decisions.md)：所有設計決策的總表。
-- [`docs/adr/`](docs/adr/)：重大決策的來龍去脈（固定允許清單、地圖預覽卡自製、共用層架構）。
+- [`docs/adr/`](docs/adr/)：重大決策的來龍去脈（固定允許清單、地圖預覽卡自製、共用層架構、行程規劃的 localStorage 資料模型）。
 - [`docs/plan.md`](docs/plan.md)：最初的規劃書。

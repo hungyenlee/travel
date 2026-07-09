@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的行程 · 台灣散步筆記</title>
+  <!-- Leaflet 地圖樣式（唯一的外部相依） -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <!-- 全站共用設計系統 -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <!-- 頁首（與其他頁一致；nav 多一顆「我的行程」） -->
+  <header class="site-header">
+    <div class="container">
+      <a class="site-title" href="index.html">台灣散步筆記</a>
+      <nav class="nav"><a href="index.html#cities">探索城市</a><a href="plan.html">我的行程</a></nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!--
+      以下皆為「插槽」容器，實際內容由 plan.js 依 TripStore 資料動態填入。
+    -->
+
+    <!-- 頁面標題 -->
+    <h1 id="page-title">我的行程</h1>
+
+    <!-- 行程管理列（select 選行程＋重新命名／刪除／新行程；plan.js 產生內容） -->
+    <div class="trip-manager" id="trip-manager"></div>
+
+    <!-- 孤兒提示（有地點已不存在時，plan.js 於此插入 .data-warning） -->
+    <div id="orphan-slot"></div>
+
+    <!-- 天數選擇列（未分配／第1天…／＋加一天／移除這天；plan.js 產生按鈕） -->
+    <div class="day-tabs" id="day-tabs"></div>
+
+    <!-- 桌機左地圖右清單並排；手機由上而下 -->
+    <div class="plan-layout">
+      <!-- 地圖區 -->
+      <div class="plan-map-pane">
+        <div class="map" id="plan-map"></div>
+      </div>
+      <!-- 清單區 -->
+      <div class="plan-list-pane">
+        <div id="plan-list"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 頁尾（與其他頁一致） -->
+  <footer class="site-footer">
+    <div class="container">台灣散步筆記 · 探索台灣各城市的景點與美食</div>
+  </footer>
+
+  <!-- 載入順序：Leaflet → 資料 → 共用工具 → 行程資料層 → 本頁邏輯 -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="data/data.js"></script>
+  <script src="assets/js/shared.js"></script>
+  <script src="assets/js/trip-store.js"></script>
+  <script src="assets/js/plan.js"></script>
+</body>
+</html>

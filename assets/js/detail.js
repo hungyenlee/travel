@@ -110,10 +110,15 @@
           "<div>" + escapeHtml(place.openingHours) + "</div>" +
         "</div>" +
 
-        // 主要動作：在 Google 地圖開啟
+        // 主要動作：在 Google 地圖開啟，並可加入行程
         '<div class="detail-block">' +
           '<a class="btn btn--primary" href="' + mapUrl + '" target="_blank" rel="noopener">在 Google 地圖開啟</a>' +
+          // 「加入行程」按鈕：狀態與選單由 trip-picker.js 依 data-add-trip 接管
+          '<button type="button" class="add-trip-btn" data-add-trip="' + escapeHtml(place.id) + '">＋ 加入行程</button>' +
         "</div>" +
       "</div>" +
     "</div>";
+
+  // 內容填好後，把「加入行程」按鈕交給 TripPicker 掛狀態與點擊選單
+  TripPicker.wireAll(root);
 })();

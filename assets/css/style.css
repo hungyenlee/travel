@@ -573,3 +573,284 @@ a.city-card:hover {
   border: none; background: none; font-size: 1.4rem; line-height: 1;
   color: var(--color-text-muted); cursor: pointer;
 }
+
+/* ============================================================
+ * 行程規劃（我的行程）
+ * ============================================================ */
+
+/* ---------- 加入行程按鈕（詳細頁 inline／城市頁列表卡覆蓋） ---------- */
+.add-trip-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+.add-trip-btn:hover { background: var(--color-bg); }
+.add-trip-btn.is-added {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+/* 詳細頁：與「在 Google 地圖開啟」並排時留點間距 */
+.detail-block .add-trip-btn { margin-left: var(--space-sm); }
+
+/* 城市頁列表卡：整張卡是 <a>，把加入鈕當兄弟節點浮在右上角 */
+.card-wrap { position: relative; display: flex; flex-direction: column; }
+.card-wrap > .card { flex: 1; }
+.card-wrap .add-trip-btn {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow-sm);
+}
+.card-wrap .add-trip-btn.is-added {
+  background: var(--color-primary);
+}
+
+/* ---------- 加入行程選單（trip-picker popover） ---------- */
+.trip-picker__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: transparent;
+}
+.trip-picker {
+  /* 定位語境由 CSS 提供；實際 top/left 座標由 trip-picker.js 動態設定 */
+  position: fixed;
+  z-index: 1201;
+  min-width: 220px;
+  max-width: 300px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-sm);
+}
+.trip-picker__list { display: flex; flex-direction: column; gap: 2px; }
+.trip-picker__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  width: 100%;
+  text-align: left;
+  padding: var(--space-sm);
+  font-size: var(--fs-base);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text);
+  cursor: pointer;
+}
+.trip-picker__item:hover { background: var(--color-bg); }
+.trip-picker__item.is-added { color: var(--color-primary); font-weight: 600; }
+.trip-picker__check { color: var(--color-primary); font-weight: 700; }
+.trip-picker__name { flex: 1; min-width: 0; }
+.trip-picker__empty {
+  padding: var(--space-sm) var(--space-sm) var(--space-md);
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+.trip-picker__new {
+  display: flex;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+}
+.trip-picker__new-input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--fs-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.trip-picker__new-btn {
+  flex: none;
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  background: var(--color-primary);
+  color: #fff;
+}
+.trip-picker__new-btn:hover { background: var(--color-primary-dark); }
+
+/* ---------- 行程管理列 ---------- */
+.trip-manager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-block: var(--space-md) var(--space-lg);
+}
+.trip-manager__edit { display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center; }
+.trip-select,
+.trip-manager__input,
+.plan-card__move {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--fs-base);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.trip-select { min-width: 12rem; max-width: 100%; }
+.trip-manager__input { min-width: 12rem; }
+
+/* ---------- 天數選擇列 ---------- */
+.day-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-block: var(--space-md);
+}
+.day-tab {
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.day-tab:hover { background: var(--color-bg); }
+.day-tab.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+.day-tab--add { border-style: dashed; color: var(--color-text-muted); }
+.day-tab--remove {
+  border-color: var(--color-warning-border);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+/* ---------- 行程頁版面（桌機左地圖右清單／手機上下） ---------- */
+.plan-layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+@media (min-width: 768px) {
+  .plan-layout { flex-direction: row; align-items: flex-start; }
+  .plan-map-pane {
+    flex: 1 1 55%;
+    position: sticky;
+    top: var(--space-md);
+  }
+  .plan-list-pane { flex: 1 1 45%; min-width: 0; }
+}
+
+/* 行程頁手機版：地圖高度收斂（比城市頁的 50vh 更矮），讓清單更快浮現；
+ * 只限定在行程頁的地圖，不影響城市頁。桌機維持 60vh 並排。 */
+.plan-map-pane .map { height: 38vh; }
+@media (min-width: 768px) {
+  .plan-map-pane .map { height: 60vh; }
+}
+
+/* 該天無地點時的地圖區訊息（沿用 .map 尺寸，改成虛線空狀態外觀） */
+.plan-map__msg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-lg);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  box-shadow: none;
+}
+
+/* ---------- 地圖編號標記（divIcon） ---------- */
+/* 清掉 Leaflet 對 div icon 的預設白底與邊框 */
+.plan-marker-wrap { background: none; border: none; }
+.plan-marker {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: #fff;
+  border: 2px solid #fff;
+  box-shadow: var(--shadow-sm);
+  box-sizing: border-box;
+}
+.plan-marker--attraction { background: var(--color-attraction); }
+.plan-marker--restaurant { background: var(--color-restaurant); }
+.plan-marker.is-active {
+  box-shadow: 0 0 0 4px var(--color-pin);
+  z-index: 1000;
+}
+
+/* ---------- 行程頁地點卡 ---------- */
+.plan-card {
+  position: relative;
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+.plan-card + .plan-card { margin-top: var(--space-md); }
+.plan-card.is-active {
+  border-color: var(--color-pin);
+  box-shadow: 0 0 0 2px var(--color-pin), var(--shadow-md);
+}
+.plan-card__num {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-text);
+}
+.plan-card__link { flex: none; display: block; }
+.plan-card__img {
+  width: 88px;
+  height: 66px;               /* 4:3 */
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--color-border);
+}
+.plan-card__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--space-xs); }
+.plan-card__title { font-weight: 700; color: var(--color-text); }
+.plan-card__title:hover { color: var(--color-primary); text-decoration: none; }
+.plan-card__meta { font-size: var(--fs-sm); color: var(--color-text-muted); }
+.plan-card__controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-sm); margin-top: var(--space-xs); }
+.plan-card__remove {
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+.plan-card__remove:hover { border-color: var(--color-restaurant); color: var(--color-restaurant); }
