@@ -380,7 +380,12 @@ a.card:hover { text-decoration: none; }
 }
 .city-card {
   position: relative;
-  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  min-height: 140px;
+  overflow: hidden;             /* 讓背景照與漸層被圓角裁切 */
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
@@ -388,20 +393,49 @@ a.card:hover { text-decoration: none; }
   text-align: center;
   font-size: var(--fs-xl);
   font-weight: 700;
-  color: var(--color-text);
+  /* 特色背景照：由 city-card--<slug> 指定 background-image；置中裁切鋪滿 */
+  background-color: var(--color-surface);
+  background-size: cover;
+  background-position: center;
+  color: #fff;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+/* 深色漸層遮罩：壓在背景照上、文字之下，確保白字在任何照片上都清楚 */
+.city-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0.55) 100%);
+}
+.city-card__name {
+  position: relative;           /* 疊在遮罩之上 */
+  z-index: 1;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+.city-card .badge {
+  position: relative;
+  z-index: 1;
 }
 a.city-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-md);
   text-decoration: none;
 }
+a.city-card:hover::before {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.45) 100%);
+}
 .city-card--disabled {
-  filter: grayscale(1);
-  opacity: 0.55;
+  opacity: 0.92;                /* 彩色呈現，僅微降透明度暗示尚未開放 */
   pointer-events: none;         /* 即將新增：不可點 */
   cursor: default;
 }
+
+/* 各縣市特色背景照（來源見 assets/images/cities/CREDITS.md） */
+.city-card--tainan    { background-image: url("../images/cities/tainan.jpg"); }
+.city-card--kaohsiung { background-image: url("../images/cities/kaohsiung.jpg"); }
+.city-card--taichung  { background-image: url("../images/cities/taichung.jpg"); }
+.city-card--taipei    { background-image: url("../images/cities/taipei.jpg"); }
+.city-card--hualien   { background-image: url("../images/cities/hualien.jpg"); }
 
 /* ---------- 詳細頁 Detail page ---------- */
 .detail {

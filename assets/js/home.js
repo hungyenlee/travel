@@ -14,16 +14,21 @@ function renderCities() {
   var grid = document.getElementById("cityGrid");
   if (!grid) return;
 
-  // 逐一產生城市卡片：可瀏覽的做成連結，尚未開放的做成灰階不可點卡片
+  // 逐一產生城市卡片：可瀏覽的做成連結，尚未開放的做成灰階不可點卡片。
+  // 每張卡再依 slug 加上 city-card--<slug>，由 CSS 疊上該縣市的特色背景照。
   var html = cities.map(function (city) {
     var name = escapeHtml(city.name);
+    var slugClass = "city-card--" + city.slug;
+    // 卡片文字包一層 .city-card__name，方便疊在背景照上並置中顯示
+    var label = '<span class="city-card__name">' + name + "</span>";
     if (city.available) {
       // 可瀏覽城市：整張卡片連到城市頁
-      return '<a class="city-card" href="' + cityUrl(city.slug) + '">' + name + "</a>";
+      return '<a class="city-card ' + slugClass + '" href="' + cityUrl(city.slug) + '">' +
+        label + "</a>";
     }
     // 即將新增城市：不可點，附上「即將新增」徽章
-    return '<div class="city-card city-card--disabled">' + name +
-      ' <span class="badge">即將新增</span></div>';
+    return '<div class="city-card city-card--disabled ' + slugClass + '">' +
+      label + ' <span class="badge">即將新增</span></div>';
   }).join("");
 
   grid.innerHTML = html;
