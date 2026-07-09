@@ -625,7 +625,8 @@ a.city-card:hover {
   background: transparent;
 }
 .trip-picker {
-  /* position/top/left 由 trip-picker.js 動態設定（fixed） */
+  /* 定位語境由 CSS 提供；實際 top/left 座標由 trip-picker.js 動態設定 */
+  position: fixed;
   z-index: 1201;
   min-width: 220px;
   max-width: 300px;
