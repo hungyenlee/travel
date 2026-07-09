@@ -756,6 +756,13 @@ a.city-card:hover {
   .plan-list-pane { flex: 1 1 45%; min-width: 0; }
 }
 
+/* 行程頁手機版：地圖高度收斂（比城市頁的 50vh 更矮），讓清單更快浮現；
+ * 只限定在行程頁的地圖，不影響城市頁。桌機維持 60vh 並排。 */
+.plan-map-pane .map { height: 38vh; }
+@media (min-width: 768px) {
+  .plan-map-pane .map { height: 60vh; }
+}
+
 /* 該天無地點時的地圖區訊息（沿用 .map 尺寸，改成虛線空狀態外觀） */
 .plan-map__msg {
   display: flex;
