@@ -369,9 +369,16 @@
     var ordered = list.slice().sort(function (a, b) {
       return (isPinned(b.id) ? 1 : 0) - (isPinned(a.id) ? 1 : 0);
     });
+    // 每張卡外包一層 .card-wrap，並把「加入行程」按鈕當作 <a class="card"> 的兄弟節點
+    // （不可放進 <a> 內，否則點按鈕會被當成點卡片而導向詳細頁）。按鈕互動由 trip-picker.js 掛上。
     els.list.innerHTML = ordered.map(function (p) {
-      return renderCard(p, isPinned(p.id));
+      return '<div class="card-wrap">' +
+        renderCard(p, isPinned(p.id)) +
+        '<button type="button" class="add-trip-btn" data-add-trip="' + escapeHtml(p.id) + '">＋ 加入行程</button>' +
+      '</div>';
     }).join("");
+    // 渲染後為列表內所有「加入行程」按鈕設定初始狀態並掛上點擊開啟行程選單。
+    TripPicker.wireAll(els.list);
   }
 
   /* ============================================================

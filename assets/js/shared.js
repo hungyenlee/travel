@@ -24,6 +24,9 @@
  *   renderPreview(place, pinned)  產生地圖預覽卡的內容（景點／店家欄位不同）
  *                                 內含「固定／取消固定」切換鈕，由呼叫端接事件
  *   findTaxonomyViolations(list)  檢查地點是否用了 taxonomy 清單外的分類／標籤
+ *   createBaseMap(elId)           建立 Leaflet 地圖並掛上 OSM 底圖，回傳 map（行程頁用）
+ *   fitMapToLatLngs(map, latlngs) 依一組座標框選視野（單點置中／多點 fitBounds）
+ *   getMarkerColors()             讀 CSS 變數回傳 {attraction, restaurant, pin} 標記色
  * ============================================================
  */
 
@@ -156,4 +159,46 @@ function findTaxonomyViolations(list) {
     }
   });
   return problems;
+}
+
+/* ---------- 地圖低階工具（供 plan.js 重用；city.js 維持自有實作） ---------- */
+
+/* 建立 Leaflet 地圖並掛上 OpenStreetMap 底圖（URL、maxZoom、繁中 attribution
+ * 與 city.js 的 initMap 保持一致）。此函式不設定 view、不加任何標記，
+ * 純粹回傳可用的 map 實例，交由呼叫端自行框選視野與放標記。 */
+function createBaseMap(elId) {
+  var map = L.map(elId); // 不設固定 center/zoom，稍後由呼叫端框選
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> 貢獻者',
+  }).addTo(map);
+  return map;
+}
+
+/* 依一組座標框選地圖視野：
+ *   - 空陣列：不動（維持現況）。
+ *   - 單點：setView 置中並固定縮放 15。
+ *   - 多點：fitBounds 含 padding [40,40]，確保邊緣標記不貼邊。 */
+function fitMapToLatLngs(map, latlngs) {
+  if (!latlngs || !latlngs.length) return; // 空陣列不動
+  if (latlngs.length === 1) {
+    map.setView(latlngs[0], 15);
+  } else {
+    map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40] });
+  }
+}
+
+/* 從 CSS 變數讀出標記顏色，回傳 {attraction, restaurant, pin}；
+ * 找不到（或值為空）時退回預設藍／橘／紫，確保與圖例一致。 */
+function getMarkerColors() {
+  var colors = { attraction: "#2563eb", restaurant: "#ea580c", pin: "#7c3aed" };
+  var cs = getComputedStyle(document.documentElement);
+  var a = cs.getPropertyValue("--color-attraction").trim();
+  var r = cs.getPropertyValue("--color-restaurant").trim();
+  var p = cs.getPropertyValue("--color-pin").trim();
+  if (a) colors.attraction = a;
+  if (r) colors.restaurant = r;
+  if (p) colors.pin = p;
+  return colors;
 }
