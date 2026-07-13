@@ -32,7 +32,7 @@ const cities = [
   { slug: "taichung",  name: "台中", available: false },
   { slug: "taipei",    name: "台北", available: false },
   { slug: "hualien",   name: "花蓮", available: false },
-  { slug: "taitung",   name: "台東", available: false },
+  { slug: "taitung",   name: "台東", available: true  },
 ];
 
 /* 允許清單（taxonomy）：篩選按鈕只從這裡產生。
@@ -41,9 +41,10 @@ const taxonomy = {
   // 各城市的行政區清單（以城市 slug 為 key）
   districts: {
     tainan: ["中西區", "安南區", "仁德區", "安平區", "東區"],
+    taitung: ["太麻里鄉", "成功鎮", "鹿野鄉", "池上鄉"],
   },
   // 景點分類（景點用）
-  attractionCategories: ["古蹟", "自然景觀", "博物館"],
+  attractionCategories: ["古蹟", "自然景觀", "博物館", "觀景台"],
   // 料理分類（美食店家用）
   restaurantCategories: ["牛肉湯", "居酒屋", "串燒", "酒吧"],
   // 特色標籤（景點與店家共用，可篩選）
@@ -53,7 +54,7 @@ const taxonomy = {
   ],
 };
 
-/* 地點清單（places）：第一版全部位於台南。 */
+/* 地點清單（places）：台南為第一版主力，台東為第二批新增（景點）。 */
 const places = [
   {
     id: "chihkan-tower",
@@ -163,5 +164,82 @@ const places = [
     openingHours: "週二–週日 20:00–02:00（週六日至 03:00，週一休）",
     mapUrl: "https://maps.app.goo.gl/qhRohCJ9eGCu5Pza7",
     location: { lat: 22.9985496, lng: 120.2023874 },
+  },
+
+  /* ---------- 台東 ---------- */
+  {
+    id: "duoliang-station",
+    type: "attraction",
+    name: "多良觀光車站",
+    city: "taitung",
+    district: "太麻里鄉",
+    categories: ["觀景台"],
+    tags: ["適合拍照", "需門票"],
+    image: "assets/images/duoliang-station.jpg",
+    description: "號稱全台最美車站，二樓景觀台緊鄰太平洋，可俯瞰湛藍海景與南迴鐵路列車。",
+    address: "臺東縣太麻里鄉多良村瀧溪路8-1號",
+    openingHours: "每日 08:00–17:00（入園清潔費每人 10 元）",
+    mapUrl: "https://maps.app.goo.gl/Hg48t8URFg8HyiaL7",
+    location: { lat: 22.507520, lng: 120.958849 },
+  },
+  {
+    id: "sanxiantai",
+    type: "attraction",
+    name: "三仙台觀景台",
+    city: "taitung",
+    district: "成功鎮",
+    categories: ["自然景觀"],
+    tags: ["適合拍照", "免費", "生態"],
+    image: "assets/images/sanxiantai.jpg",
+    description: "東海岸代表地標，跨海八拱橋連接離岸小島，珊瑚礁地質與滿天星空聞名。（八拱橋整修封閉至 2027 年底）",
+    address: "臺東縣成功鎮三仙里基翬路74號",
+    openingHours: "全日開放（免費入園，停車另收清潔費）",
+    mapUrl: "https://maps.app.goo.gl/QSSsX42UG3siwD268",
+    location: { lat: 23.123656, lng: 121.409022 },
+  },
+  {
+    id: "huayuan-sky-mirror",
+    type: "attraction",
+    name: "天空之境（華源觀景台）",
+    city: "taitung",
+    district: "太麻里鄉",
+    categories: ["觀景台"],
+    tags: ["適合拍照", "免費"],
+    image: "assets/images/huayuan-sky-mirror.jpg",
+    description: "台9線旁農園的無邊際蓄水池，晴天滿水時倒映藍天海景，還有漂流木愛心可拍照。",
+    address: "臺東縣太麻里鄉華源村（台9線約395.5K產業道路）",
+    openingHours: "全日開放（退潮、晴朗早晨最佳）",
+    mapUrl: "https://maps.app.goo.gl/rNBA5SeaAMHs9ncw7",
+    location: { lat: 22.659799, lng: 121.021249 },
+  },
+  {
+    id: "luye-highland",
+    type: "attraction",
+    name: "鹿野高台",
+    city: "taitung",
+    district: "鹿野鄉",
+    categories: ["自然景觀"],
+    tags: ["適合拍照", "免費", "親子"],
+    image: "assets/images/luye-highland.jpg",
+    description: "花東縱谷的大草原斜坡，居高俯瞰卑南溪谷田野，也是台灣國際熱氣球嘉年華主場地。",
+    address: "臺東縣鹿野鄉永安村高台路46號",
+    openingHours: "全日開放（熱氣球活動另訂時段）",
+    mapUrl: "https://maps.app.goo.gl/m9wpmbvquwiQfdLt5",
+    location: { lat: 22.916449, lng: 121.121595 },
+  },
+  {
+    id: "mr-brown-avenue",
+    type: "attraction",
+    name: "伯朗大道",
+    city: "taitung",
+    district: "池上鄉",
+    categories: ["自然景觀"],
+    tags: ["適合拍照", "免費", "親子"],
+    image: "assets/images/mr-brown-avenue.jpg",
+    description: "筆直田間道路兩旁無電線桿，奉茶樹（原金城武樹）與金黃稻浪構成的經典田園風景。",
+    address: "臺東縣池上鄉伯朗大道",
+    openingHours: "全日開放（全年管制，僅開放單車與步行）",
+    mapUrl: "https://maps.app.goo.gl/mW3zBoWHf8PHGbDU7",
+    location: { lat: 23.098807, lng: 121.213002 },
   },
 ];
