@@ -32,6 +32,7 @@ const cities = [
   { slug: "taichung",  name: "台中", available: false },
   { slug: "taipei",    name: "台北", available: false },
   { slug: "hualien",   name: "花蓮", available: false },
+  { slug: "taitung",   name: "台東", available: false },
 ];
 
 /* 允許清單（taxonomy）：篩選按鈕只從這裡產生。

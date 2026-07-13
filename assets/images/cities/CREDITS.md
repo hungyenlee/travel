@@ -10,6 +10,7 @@
 | `taichung.jpg` | 台中・高美濕地 | 謝秉剛 | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Taichung_County_Gaomei_Wetlands_Wildlife_Refuge.jpg |
 | `taipei.jpg` | 台北・台北101 | CEphoto, Uwe Aranas | CC BY-SA 3.0 | https://commons.wikimedia.org/wiki/File:Taipei_Taiwan_Taipei-101-Tower-01.jpg |
 | `hualien.jpg` | 花蓮・七星潭 | Artemas Liu | CC BY-SA 2.0 | https://commons.wikimedia.org/wiki/File:Qixingtan_Beach,_Taiwan.jpg |
+| `taitung.jpg` | 台東・多良車站 | LowensteinYang | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Duoliang_Railway_Station_%E5%A4%9A%E8%89%AF%E8%BB%8A%E7%AB%99_20200627.jpg |
 
 > 授權全文：CC BY 2.0 <https://creativecommons.org/licenses/by/2.0/>、
 > CC BY-SA 2.0 <https://creativecommons.org/licenses/by-sa/2.0/>、
