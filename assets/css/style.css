@@ -436,6 +436,7 @@ a.city-card:hover::before {
 .city-card--taichung  { background-image: url("../images/cities/taichung.jpg"); }
 .city-card--taipei    { background-image: url("../images/cities/taipei.jpg"); }
 .city-card--hualien   { background-image: url("../images/cities/hualien.jpg"); }
+.city-card--taitung   { background-image: url("../images/cities/taitung.jpg"); }
 
 /* ---------- 詳細頁 Detail page ---------- */
 .detail {
