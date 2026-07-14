@@ -9,8 +9,9 @@
  * ------------------------------------------------------------
  * 版面 Layout
  *   .container        內容置中的最大寬度容器
- *   .site-header      頁首橫條（含網站名與導覽）
- *   .nav              頁首內的導覽連結列
+ *   .app-shell        側邊欄 + 內容並排的最外層
+ *   .app-content      側邊欄右側的內容欄（含 main 與頁尾）
+ *   .sidebar          全站左側側邊欄（見檔尾「全站側邊欄導覽」段；由 sidebar.js 渲染）
  *   .site-footer      頁尾
  *
  * 卡片 Cards
@@ -148,39 +149,7 @@ h1, h2, h3 { line-height: 1.25; margin: 0 0 var(--space-md); }
   padding-inline: var(--space-md);
 }
 
-.site-header {
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
-}
-.site-header .container {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-sm);
-  padding-block: var(--space-md);
-}
-.site-header .site-title,
-.site-header .brand {
-  font-size: var(--fs-lg);
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-md);
-  align-items: center;
-}
-.nav a {
-  color: var(--color-text-muted);
-  font-size: var(--fs-sm);
-  padding: var(--space-xs) 0;
-}
-.nav a:hover,
-.nav a.is-active { color: var(--color-primary); text-decoration: none; }
+/* 舊頁首（site-header／nav）已由全站側邊欄取代，樣式見檔尾「全站側邊欄導覽」段。 */
 
 .site-footer {
   margin-top: var(--space-xl);
@@ -560,7 +529,6 @@ a.city-card:hover::before {
 }
 
 /* 地圖預覽卡內部版面（由 shared.js 的 renderPreview 產生） */
-.map-preview__inner,
 .map-preview { display: flex; gap: var(--space-md); align-items: flex-start; }
 .map-preview__img {
   width: 96px;
@@ -735,7 +703,6 @@ a.city-card:hover::before {
   margin-block: var(--space-md) var(--space-lg);
 }
 .trip-manager__edit { display: flex; flex-wrap: wrap; gap: var(--space-sm); align-items: center; }
-.trip-select,
 .trip-manager__input,
 .plan-card__move {
   padding: var(--space-xs) var(--space-sm);
@@ -745,7 +712,6 @@ a.city-card:hover::before {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
 }
-.trip-select { min-width: 12rem; max-width: 100%; }
 .trip-manager__input { min-width: 12rem; }
 
 /* ---------- 天數選擇列 ---------- */
