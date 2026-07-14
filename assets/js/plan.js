@@ -1,9 +1,13 @@
 /*
  * plan.js — 我的行程頁邏輯（台灣散步筆記）
  * ============================================================
- * 職責：
- *   1. 行程管理列：以 <select> 切換行程，支援重新命名／刪除／新增行程
- *      （新建與改名用 inline 輸入，非原生 prompt；刪除用 confirm 二次確認）。
+ * 本頁分兩層，依網址 ?trip=<id> 切換：
+ *   · 無 ?trip → 總覽層：列出所有行程卡片（名稱＋「N 天 · M 個地點」）＋建立新行程；
+ *     點卡片進該行程規劃層，點「建立」後直接進新行程規劃層（?new=1 自動開建立）。
+ *   · 有 ?trip → 規劃層（下列 1–5），頂部有「← 我的行程」返回總覽。
+ * 職責（規劃層）：
+ *   1. 行程管理列：標題＝行程名，支援重新命名／刪除（改名用 inline 輸入，非原生 prompt；
+ *      刪除用 confirm 二次確認後回總覽）。切換與建立行程改由側邊欄／總覽負責。
  *   2. 孤兒提示：行程內若有 getPlaceById 找不到的 placeId，頂端顯示提示，
  *      這些孤兒地點不畫在清單與地圖上。
  *   3. 天數選擇列：未分配（day 0）、第1天…第N天、＋加一天；選中某天時可移除該天。
@@ -20,7 +24,7 @@
   "use strict";
 
   /* ---------- 頁面層級狀態 ---------- */
-  var currentTripId = null; // 目前檢視中的行程 id
+  var currentTripId = null; // 規劃層目前檢視中的行程 id
   var selectedDay = 0;      // 目前選中的天（0 = 未分配；1..N = 第 N 天）
   var map = null;           // Leaflet 地圖實例（延後到需要時才建立）
   var markerLayer = null;   // 標記圖層（每次重繪整層清空）
@@ -29,12 +33,17 @@
 
   /* 重新命名的 inline 編輯狀態：true 時，行程管理列渲染成輸入框。 */
   var renaming = false;
+  /* 總覽層「建立新行程」的 inline 編輯狀態。 */
+  var overviewCreating = false;
 
   /* 常用 DOM 節點 */
   var els = {};
 
   /* ============================================================
-   * 進入點
+   * 進入點：依網址 ?trip=<id> 決定「規劃層」或「總覽層」
+   *   · ?trip=<有效 id> → 規劃層（該行程的天數／地圖／清單）。
+   *   · ?trip=<無效 id> → 退回總覽。
+   *   · 無 ?trip        → 總覽層（列出所有行程）；?new=1 自動開建立。
    * ============================================================ */
   document.addEventListener("DOMContentLoaded", init);
 
@@ -42,41 +51,150 @@
     cacheEls();
     colors = getMarkerColors();
 
-    // 決定目前行程：優先用上次檢視的，沒有就選第一個。
-    currentTripId = TripStore.getCurrentTripId();
-    var trips = TripStore.getAll();
-    if (!currentTripId || !TripStore.getTrip(currentTripId)) {
-      currentTripId = trips.length ? trips[0].id : null;
-      TripStore.setCurrentTripId(currentTripId);
+    var tripParam = getQueryParam("trip");
+    if (tripParam) {
+      if (TripStore.getTrip(tripParam)) {
+        currentTripId = tripParam;
+        TripStore.setCurrentTripId(tripParam); // 記住上次檢視
+        renderPlan();
+      } else {
+        // 指定行程不存在（可能已刪除）→ 退回總覽，清掉網址參數
+        window.location.replace("plan.html");
+      }
+      return;
     }
 
-    renderAll();
+    // 無 ?trip → 總覽層
+    renderOverview();
+    if (getQueryParam("new")) openOverviewCreate();
   }
 
   /* 快取常用 DOM 節點。 */
   function cacheEls() {
+    els.back = document.getElementById("plan-back");
     els.pageTitle = document.getElementById("page-title");
     els.manager = document.getElementById("trip-manager");
     els.orphanSlot = document.getElementById("orphan-slot");
+    els.overview = document.getElementById("trip-overview");
     els.dayTabs = document.getElementById("day-tabs");
+    els.layout = document.getElementById("plan-layout");
     els.mapEl = document.getElementById("plan-map");
     els.list = document.getElementById("plan-list");
   }
 
-  /* ============================================================
-   * 整體重繪（切換行程／天數／增減地點後都呼叫）
-   * ============================================================ */
-  function renderAll() {
-    renderManager();
+  /* 切換「規劃層」相關區塊的顯示（總覽層時全部收起）。 */
+  function showPlanSections(show) {
+    if (els.back) els.back.hidden = !show;
+    if (els.manager) els.manager.hidden = !show;
+    if (els.orphanSlot) els.orphanSlot.hidden = !show;
+    if (els.dayTabs) els.dayTabs.hidden = !show;
+    if (els.layout) els.layout.hidden = !show;
+  }
 
-    var trip = currentTripId ? TripStore.getTrip(currentTripId) : null;
-
-    // 沒有任何行程：顯示空狀態＋建立輸入，其餘區塊清空並收起地圖。
-    if (!trip) {
-      renderEmptyTrips();
-      syncSidebar();
-      return;
+  /* 行程資料變動後，通知側邊欄重建 flyout（側邊欄未載入時忽略）。 */
+  function syncSidebar() {
+    if (window.Sidebar && typeof window.Sidebar.refresh === "function") {
+      window.Sidebar.refresh();
     }
+  }
+
+  /* ============================================================
+   * 總覽層：列出所有行程卡片＋建立新行程
+   * ============================================================ */
+  function renderOverview() {
+    showPlanSections(false);
+    if (els.overview) els.overview.hidden = false;
+    if (els.pageTitle) els.pageTitle.textContent = "我的行程";
+
+    var trips = TripStore.getAll();
+    var sub = trips.length
+      ? "選一個行程開始規劃，或建立新的。"
+      : "還沒有行程，建立第一個吧。";
+
+    var cards = trips.map(overviewCardHtml).join("");
+    var newCell = overviewCreating
+      ? '<div class="trip-overview__new-form">' +
+          '<input type="text" class="trip-overview__new-input" id="overview-new-input" ' +
+            'placeholder="行程名稱" maxlength="40">' +
+          '<button type="button" class="btn btn--primary" id="overview-new-ok">建立</button>' +
+          '<button type="button" class="btn" id="overview-new-cancel">取消</button>' +
+        '</div>'
+      : '<button type="button" class="trip-overview__new" id="overview-new">＋ 建立新行程</button>';
+
+    els.overview.innerHTML =
+      '<p class="trip-overview__sub">' + sub + "</p>" +
+      '<div class="trip-overview__grid">' + cards + newCell + "</div>";
+
+    wireOverview();
+    syncSidebar();
+  }
+
+  /* 單張行程卡片：名稱＋「N 天 · M 個地點」，整張連到規劃層。 */
+  function overviewCardHtml(trip) {
+    var placeCount = trip.items.filter(function (it) {
+      return getPlaceById(it.placeId); // 只算實際存在的地點（略過孤兒）
+    }).length;
+    var meta = trip.days + " 天 · " + placeCount + " 個地點";
+    return '' +
+      '<a class="trip-overview__card" href="plan.html?trip=' +
+        encodeURIComponent(trip.id) + '">' +
+        '<span class="trip-overview__name">' + escapeHtml(trip.name) + "</span>" +
+        '<span class="trip-overview__meta">' + meta + "</span>" +
+      "</a>";
+  }
+
+  /* 進入「建立新行程」inline 輸入狀態。 */
+  function openOverviewCreate() {
+    overviewCreating = true;
+    renderOverview();
+    focusInput("overview-new-input");
+  }
+
+  /* 掛總覽層事件（建立卡／建立輸入）。 */
+  function wireOverview() {
+    var newBtn = document.getElementById("overview-new");
+    if (newBtn) newBtn.addEventListener("click", openOverviewCreate);
+
+    var input = document.getElementById("overview-new-input");
+    var ok = document.getElementById("overview-new-ok");
+    var cancel = document.getElementById("overview-new-cancel");
+
+    function commit() {
+      // 名稱空白時 TripStore.createTrip 會給預設名，仍可建立。
+      var trip = TripStore.createTrip(input ? input.value : "");
+      // 建立後直接進該新行程的規劃層。
+      window.location.href = "plan.html?trip=" + encodeURIComponent(trip.id);
+    }
+    function abort() {
+      overviewCreating = false;
+      renderOverview();
+    }
+    if (ok) ok.addEventListener("click", commit);
+    if (cancel) cancel.addEventListener("click", abort);
+    if (input) input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); commit(); }
+      else if (e.key === "Escape") { e.preventDefault(); abort(); }
+    });
+  }
+
+  /* ============================================================
+   * 規劃層：某個行程的天數／地圖／清單（原有功能）
+   * ============================================================ */
+
+  /* 進入規劃層：顯示相關區塊後畫出內容。 */
+  function renderPlan() {
+    if (els.overview) { els.overview.hidden = true; els.overview.innerHTML = ""; }
+    showPlanSections(true);
+    renderAll();
+  }
+
+  /* 規劃層整體重繪（切換天數／增減地點後都呼叫；區塊已在 renderPlan 顯示）。 */
+  function renderAll() {
+    var trip = currentTripId ? TripStore.getTrip(currentTripId) : null;
+    // 行程已不存在（例如剛刪除）→ 退回總覽。
+    if (!trip) { window.location.href = "plan.html"; return; }
+
+    renderManager();
 
     // 選中的天若超出目前天數（例如剛移除天），夾回未分配。
     if (selectedDay > trip.days) selectedDay = 0;
@@ -91,31 +209,17 @@
     syncSidebar();
   }
 
-  /* 行程資料變動後，通知側邊欄重繪行程清單與高亮（側邊欄未載入時忽略）。 */
-  function syncSidebar() {
-    if (window.Sidebar && typeof window.Sidebar.refresh === "function") {
-      window.Sidebar.refresh();
-    }
-  }
-
   /* ============================================================
    * 行程管理列
    * ============================================================ */
 
-  /* 依目前狀態（正常／改名中）渲染行程管理列。
-   * 標題顯示目前行程名稱；切換／建立行程改由側邊欄清單負責。 */
+  /* 規劃層的行程管理列（標題＝行程名稱；重新命名／刪除）。 */
   function renderManager() {
-    var trips = TripStore.getAll();
-    var cur = currentTripId ? TripStore.getTrip(currentTripId) : null;
+    var cur = TripStore.getTrip(currentTripId);
+    if (!cur) return;
 
-    // 頁面標題＝目前行程名稱（無行程時用通用標題）。
-    if (els.pageTitle) els.pageTitle.textContent = cur ? cur.name : "我的行程";
-
-    // 沒有行程時，管理列清空，交由 renderEmptyTrips 處理。
-    if (!trips.length || !cur) {
-      els.manager.innerHTML = "";
-      return;
-    }
+    // 頁面標題＝目前行程名稱。
+    if (els.pageTitle) els.pageTitle.textContent = cur.name;
 
     // 改名中：顯示 inline 輸入框（預填目前名稱）＋確定／取消。
     if (renaming) {
@@ -153,9 +257,8 @@
       var name = cur ? cur.name : "";
       if (window.confirm("確定刪除行程「" + name + "」？此動作無法復原。")) {
         TripStore.deleteTrip(currentTripId);
-        currentTripId = TripStore.getCurrentTripId();
-        selectedDay = 0;
-        renderAll();
+        // 刪除後回到總覽層。
+        window.location.href = "plan.html";
       }
     });
   }
@@ -183,58 +286,6 @@
       if (e.key === "Enter") { e.preventDefault(); commit(); }
       else if (e.key === "Escape") { e.preventDefault(); abort(); }
     });
-  }
-
-  /* 掛上「建立新行程」inline 輸入的事件（可重用於空狀態的建立框）。
-   * onDone 在取消或建立後、重繪前呼叫，用來清掉相關的編輯旗標。 */
-  function wireCreate(inputId, okId, cancelId, onDone) {
-    var input = document.getElementById(inputId);
-    var ok = document.getElementById(okId);
-    var cancel = document.getElementById(cancelId);
-
-    function commit() {
-      var name = input ? input.value.trim() : "";
-      // 名稱空白時 TripStore.createTrip 會給預設名，仍可建立。
-      var trip = TripStore.createTrip(name);
-      currentTripId = trip.id; // createTrip 已設為 current，這裡同步本地狀態
-      selectedDay = 0;
-      if (onDone) onDone();
-      renderAll();
-    }
-    function abort() {
-      if (onDone) onDone();
-      renderAll();
-    }
-
-    if (ok) ok.addEventListener("click", commit);
-    if (cancel) cancel.addEventListener("click", abort);
-    if (input) input.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); commit(); }
-      else if (e.key === "Escape") { e.preventDefault(); abort(); }
-    });
-  }
-
-  /* 沒有任何行程時的畫面：空狀態訊息＋建立輸入框。 */
-  function renderEmptyTrips() {
-    els.manager.innerHTML = "";
-    els.orphanSlot.innerHTML = "";
-    els.dayTabs.innerHTML = "";
-    clearMap();
-
-    els.list.innerHTML =
-      '<div class="empty-state">' +
-        "<p>還沒有行程，建立第一個吧</p>" +
-        '<div class="trip-manager__edit">' +
-          '<input type="text" class="trip-manager__input" id="trip-create-input" ' +
-            'placeholder="輸入行程名稱" maxlength="40">' +
-          '<button type="button" class="btn btn--primary" id="trip-create-ok">建立</button>' +
-        '</div>' +
-      "</div>";
-
-    // 空狀態沒有「取消」鈕，塞一顆隱藏的假 cancel 以重用 wireCreate 亦可，
-    // 但更簡單：直接接 input/ok，這裡用 wireCreate 並容忍 cancel 不存在。
-    wireCreate("trip-create-input", "trip-create-ok", "trip-create-cancel-nonexistent", null);
-    focusInput("trip-create-input");
   }
 
   /* ============================================================
@@ -557,18 +608,5 @@
       }
     }, 0);
   }
-
-  /* ============================================================
-   * 對外 hook：供側邊欄在「行程頁」就地切換行程（免整頁重載）。
-   * 側邊欄偵測到此物件時，改呼叫這裡而非導向 plan.html。
-   * ============================================================ */
-  window.PlanPage = {
-    selectTrip: function (tripId) {
-      currentTripId = tripId;
-      TripStore.setCurrentTripId(tripId);
-      selectedDay = 0; // 換行程回到未分配
-      renderAll();
-    }
-  };
 
 })();

@@ -20,20 +20,32 @@
       以下皆為「插槽」容器，實際內容由 plan.js 依 TripStore 資料動態填入。
     -->
 
-    <!-- 頁面標題 -->
+    <!--
+      本頁兩層（由 plan.js 依網址 ?trip=<id> 切換）：
+        · 無 ?trip → 總覽層：#trip-overview 列出所有行程卡片。
+        · 有 ?trip → 規劃層：返回連結＋管理列＋天數列＋地圖／清單。
+    -->
+
+    <!-- 返回總覽連結（僅規劃層顯示，plan.js 控制） -->
+    <a id="plan-back" class="plan-back" href="plan.html" hidden>← 我的行程</a>
+
+    <!-- 頁面標題（總覽＝「我的行程」；規劃層＝行程名稱） -->
     <h1 id="page-title">我的行程</h1>
 
-    <!-- 行程管理列（select 選行程＋重新命名／刪除／新行程；plan.js 產生內容） -->
+    <!-- 行程管理列（規劃層：重新命名／刪除；plan.js 產生內容） -->
     <div class="trip-manager" id="trip-manager"></div>
 
     <!-- 孤兒提示（有地點已不存在時，plan.js 於此插入 .data-warning） -->
     <div id="orphan-slot"></div>
 
+    <!-- 總覽層：行程卡片列（plan.js 產生內容） -->
+    <div id="trip-overview"></div>
+
     <!-- 天數選擇列（未分配／第1天…／＋加一天／移除這天；plan.js 產生按鈕） -->
     <div class="day-tabs" id="day-tabs"></div>
 
     <!-- 桌機左地圖右清單並排；手機由上而下 -->
-    <div class="plan-layout">
+    <div class="plan-layout" id="plan-layout">
       <!-- 地圖區 -->
       <div class="plan-map-pane">
         <div class="map" id="plan-map"></div>
