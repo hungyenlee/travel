@@ -41,7 +41,22 @@
 
 - **只有 bug、功能、重構**這類「值得追蹤的工作」才開 Issue。
 - 錯字、文案、小樣式等**瑣事可略過 Issue**，直接開 Branch + PR，但 PR 說明要交代清楚。
-- 開 Issue 時套用模板（bug／feature）。
+- 開 Issue 時套用模板（bug／feature／backlog）。
+
+## Backlog（待開發項目）
+
+「未來想做／考慮做」的項目一律用 **GitHub Issues** 追蹤，**不寫進 `docs/decisions.md`**
+（`decisions.md` 只記「已採用的決策」）。理由見 [ADR-0008](docs/adr/0008-backlog-via-issues.md)。
+
+- **怎麼開**：用「Backlog／日後再議」模板（`.github/ISSUE_TEMPLATE/backlog.md`），
+  會自動掛上 `enhancement` + [`icebox`](https://github.com/hungyenlee/travel/labels/icebox) 標籤。
+  標題沿用 Conventional Commits 風格（`feat:` / `refactor:` …）。
+- **`icebox` 的意思**：日後再議、**尚未排入實作**。放進 backlog **不等於「開始實作」**——
+  討論／存點子階段自由，不套實作流程。
+- **由 AI 代理開立時，須先徵得維護者同意**才建立 Issue（見 [AGENTS.md](AGENTS.md)）。
+- **撿起來做**：決定要做時，把該 Issue 的 `icebox` 標籤**移除**（代表排進來了），
+  **重用同一則 Issue**（不另開）接續既有流程：開 `<類型>/<說明>` 分支 → 實作 → PR 用
+  `Closes #n` 連結 → 你 review + Squash merge。
 
 ## Commit 訊息
 

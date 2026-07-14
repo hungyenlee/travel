@@ -51,6 +51,7 @@
 ## 開發流程
 
 22. **受保護的 PR 流程**：不直接 commit 到 `main`，改走 Issue（限 bug／功能／重構）→ Branch（`<類型>/<說明>`）→ 實作＋preview 實測＋補文件 → PR（`Closes #n`）→ 你 review + **Squash merge**。`main` 開啟分支保護、連管理員不可繞過，並以最小 CI（`node --check` + HTML 引用檢查）為合併必要條件。細則見 [CONTRIBUTING.md](../CONTRIBUTING.md)、理由見 [ADR-0005](./adr/0005-dev-workflow.md)。
+31. **待開發項目改用 GitHub Issues 追蹤，不寫進本檔**：未來要做／考慮做的項目一律開成 GitHub Issue（掛 `icebox` 標籤＝日後再議），本檔只保留「已採用的決策」。撿起來做時把 `icebox` 拿掉、重用同一則 Issue 走既有 PR 流程。細則見 [CONTRIBUTING.md](../CONTRIBUTING.md)「Backlog」段、理由見 [ADR-0008](./adr/0008-backlog-via-issues.md)。
 
 ## 行程規劃
 
@@ -66,11 +67,11 @@
 
 30. **全站左側側邊欄；「我的行程」hover 浮出清單、plan 頁分兩層**：把四頁各自寫死的右上角頁首，改為共用側邊欄（新增 `assets/js/sidebar.js` 動態渲染，`<body>` 骨架為 `.app-shell > (aside#app-sidebar + .app-content)`）。「我的行程」拿掉展開箭頭：桌機**滑鼠移過去自動浮出行程清單 flyout**（只顯名稱，點行程→該行程規劃層、點「＋新行程」→總覽建立）、**點文字進總覽層**；手機無 hover，點「我的行程」直接進總覽。`plan.html` 依網址 `?trip=<id>` 分兩層——**總覽層**（列出所有行程卡片，顯「N 天 · M 個地點」＋建立卡）與**規劃層**（原天數／地圖／清單，頂部「← 我的行程」返回）；建立行程後直接進該新行程規劃層（`?new=1` 於總覽自動開建立）。規劃層移除切換用的 `<select>`，標題顯示當前行程名、保留重新命名／刪除。手機版側邊欄收合為漢堡抽屜。城市頁／詳細頁的「加入行程」面板維持不動，與建立入口互補。詳見 [ADR-0007](./adr/0007-sidebar-navigation.md)。
 
-## 尚未採用（可日後再議）
+## 待開發項目（未來想做的事）
 
-- （原「git 版本控制」項已完成：專案已納入 git，並託管於 GitHub、以 GitHub Pages 部署。）
-- **桌機拖曳（drag & drop）排序／搬移**：疊在同一套「移動地點到第 N 天」邏輯上，桌機專屬、手機不做；下拉選單已完整覆蓋功能，拖曳只是體驗加分。刻意延到第一版之後的獨立 PR。
-- **排行程表（一天內的時間先後／時段安排）**：第一版只做到「地點落在某一天」，不排一天內順序與時間。
-- **分享行程給同行者**（跨裝置共看）：需網址編碼或後端，第一版不做。
-- **真實日期**（出發日＋日曆）：第一版用抽象天數，不綁日期。
-- **孤兒地點的處理方式可能改**：第一版採「靜默略過＋『已略過 N 個』提示」，未來可能改為保留失效卡片、可手動清除、或搬進獨立「已失效」區等，待日後再議。
+未來要做／考慮做的項目改用 **GitHub Issues** 追蹤，不再記在本檔（見 #31）。
+「日後再議、尚未排入實作」的點子掛 [`icebox`](https://github.com/hungyenlee/travel/labels/icebox) 標籤；
+原本列在此的點子已搬成對應 Issue。
+
+- 待辦與點子：<https://github.com/hungyenlee/travel/issues>
+- 只看「日後再議」：<https://github.com/hungyenlee/travel/issues?q=is%3Aissue+is%3Aopen+label%3Aicebox>
