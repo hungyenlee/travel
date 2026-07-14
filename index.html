@@ -29,14 +29,12 @@
     }
   </style>
 </head>
-<body>
-  <header class="site-header">
-    <div class="container">
-      <a class="site-title" href="index.html">台灣散步筆記</a>
-      <nav class="nav"><a href="index.html#cities">探索城市</a><a href="plan.html">我的行程</a></nav>
-    </div>
-  </header>
+<body data-page="explore">
+  <div class="app-shell">
+    <!-- 全站側邊欄：內容由 assets/js/sidebar.js 動態填入 -->
+    <aside class="sidebar" id="app-sidebar"></aside>
 
+    <div class="app-content">
   <main class="container">
     <!-- 1. Hero：網站名、一句介紹、探索台南按鈕 -->
     <section class="hero">
@@ -61,9 +59,13 @@
   <footer class="site-footer">
     <div class="container">台灣散步筆記 · 探索台灣各城市的景點與美食</div>
   </footer>
+    </div><!-- /.app-content -->
+  </div><!-- /.app-shell -->
 
   <script src="data/data.js"></script>
   <script src="assets/js/shared.js"></script>
+  <script src="assets/js/trip-store.js"></script>
+  <script src="assets/js/sidebar.js"></script>
   <script src="assets/js/home.js"></script>
 </body>
 </html>
