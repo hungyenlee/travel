@@ -22,8 +22,17 @@
 - **Merge 權在使用者**：代理不自行 merge，也**不直接 push `main`**（分支保護會擋）。
 - 分支／commit 字首用 Conventional Commits：`feat` / `fix` / `docs` / `refactor` / `chore`。
 
+## 待開發項目（Backlog）
+
+- 「未來想做／考慮做」的項目一律開成 **GitHub Issue**（掛 `icebox` 標籤＝日後再議），
+  **不要寫進 `docs/decisions.md`**——該檔只記「已採用的決策」。
+- 代理**要建立 backlog Issue 前，須先徵得使用者同意**，經同意才用 backlog 模板開立。
+- 放進 backlog **不等於「開始實作」**；撿起來做時移除 `icebox`、重用同一則 Issue 走 PR 流程。
+- 細則見 [CONTRIBUTING.md](CONTRIBUTING.md)「Backlog」段、理由見 [docs/adr/0008-backlog-via-issues.md](docs/adr/0008-backlog-via-issues.md)。
+
 ## 文件地圖
 
 - `CONTEXT.md`：領域用語表（地點／景點／美食店家／允許清單…）。
-- `docs/decisions.md`：設計決策總表；較重大的另有 `docs/adr/`。
-- `CONTRIBUTING.md`：開發流程操作細則。
+- `docs/decisions.md`：設計決策總表（只記已採用的決策）；較重大的另有 `docs/adr/`。
+- `CONTRIBUTING.md`：開發流程操作細則（含 Backlog 流程）。
+- 待開發項目：GitHub [Issues](https://github.com/hungyenlee/travel/issues)（`icebox`＝日後再議）。
