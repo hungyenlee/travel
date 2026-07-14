@@ -27,10 +27,8 @@
   var markersById = {};     // placeId → Leaflet marker，供卡片點擊時對應
   var colors = null;        // 標記顏色（讀 CSS 變數）
 
-  /* 重新命名的 inline 編輯狀態：非 null 時，行程管理列渲染成輸入框。 */
+  /* 重新命名的 inline 編輯狀態：true 時，行程管理列渲染成輸入框。 */
   var renaming = false;
-  /* 新增行程的 inline 編輯狀態：非 null 時顯示建立輸入框。 */
-  var creating = false;
 
   /* 常用 DOM 節點 */
   var els = {};
@@ -57,6 +55,7 @@
 
   /* 快取常用 DOM 節點。 */
   function cacheEls() {
+    els.pageTitle = document.getElementById("page-title");
     els.manager = document.getElementById("trip-manager");
     els.orphanSlot = document.getElementById("orphan-slot");
     els.dayTabs = document.getElementById("day-tabs");
@@ -75,6 +74,7 @@
     // 沒有任何行程：顯示空狀態＋建立輸入，其餘區塊清空並收起地圖。
     if (!trip) {
       renderEmptyTrips();
+      syncSidebar();
       return;
     }
 
@@ -87,29 +87,42 @@
     var dayPlaces = getPlacesForDay(trip, selectedDay); // 該天的有效地點（已濾掉孤兒）
     renderList(trip, dayPlaces);
     renderMap(dayPlaces);
+
+    syncSidebar();
+  }
+
+  /* 行程資料變動後，通知側邊欄重繪行程清單與高亮（側邊欄未載入時忽略）。 */
+  function syncSidebar() {
+    if (window.Sidebar && typeof window.Sidebar.refresh === "function") {
+      window.Sidebar.refresh();
+    }
   }
 
   /* ============================================================
    * 行程管理列
    * ============================================================ */
 
-  /* 依目前狀態（正常／改名中／新增中）渲染行程管理列。 */
+  /* 依目前狀態（正常／改名中）渲染行程管理列。
+   * 標題顯示目前行程名稱；切換／建立行程改由側邊欄清單負責。 */
   function renderManager() {
     var trips = TripStore.getAll();
+    var cur = currentTripId ? TripStore.getTrip(currentTripId) : null;
 
-    // 沒有行程時，管理列不顯示 select，交由 renderEmptyTrips 處理建立輸入。
-    if (!trips.length) {
+    // 頁面標題＝目前行程名稱（無行程時用通用標題）。
+    if (els.pageTitle) els.pageTitle.textContent = cur ? cur.name : "我的行程";
+
+    // 沒有行程時，管理列清空，交由 renderEmptyTrips 處理。
+    if (!trips.length || !cur) {
       els.manager.innerHTML = "";
       return;
     }
 
     // 改名中：顯示 inline 輸入框（預填目前名稱）＋確定／取消。
     if (renaming) {
-      var cur = TripStore.getTrip(currentTripId);
       els.manager.innerHTML =
         '<div class="trip-manager__edit">' +
           '<input type="text" class="trip-manager__input" id="trip-rename-input" ' +
-            'value="' + escapeHtml(cur ? cur.name : "") + '" maxlength="40">' +
+            'value="' + escapeHtml(cur.name) + '" maxlength="40">' +
           '<button type="button" class="btn btn--primary" id="trip-rename-ok">確定</button>' +
           '<button type="button" class="btn" id="trip-rename-cancel">取消</button>' +
         '</div>';
@@ -118,48 +131,16 @@
       return;
     }
 
-    // 新增中：顯示 inline 建立輸入框＋建立／取消。
-    if (creating) {
-      els.manager.innerHTML =
-        '<div class="trip-manager__edit">' +
-          '<input type="text" class="trip-manager__input" id="trip-create-input" ' +
-            'placeholder="輸入行程名稱" maxlength="40">' +
-          '<button type="button" class="btn btn--primary" id="trip-create-ok">建立</button>' +
-          '<button type="button" class="btn" id="trip-create-cancel">取消</button>' +
-        '</div>';
-      wireCreate("trip-create-input", "trip-create-ok", "trip-create-cancel", function () {
-        creating = false;
-      });
-      focusInput("trip-create-input");
-      return;
-    }
-
-    // 正常狀態：行程下拉選單＋操作按鈕。
-    var options = trips.map(function (t) {
-      var sel = t.id === currentTripId ? " selected" : "";
-      return '<option value="' + escapeHtml(t.id) + '"' + sel + '>' +
-        escapeHtml(t.name) + "</option>";
-    }).join("");
-
+    // 正常狀態：重新命名／刪除（切換與建立行程都在側邊欄）。
     els.manager.innerHTML =
-      '<select class="trip-select" id="trip-select">' + options + "</select>" +
       '<button type="button" class="btn" id="trip-rename">重新命名</button>' +
-      '<button type="button" class="btn" id="trip-delete">刪除</button>' +
-      '<button type="button" class="btn btn--primary" id="trip-new">＋ 新行程</button>';
+      '<button type="button" class="btn" id="trip-delete">刪除</button>';
 
     wireManager();
   }
 
   /* 掛上行程管理列（正常狀態）的事件。 */
   function wireManager() {
-    var sel = document.getElementById("trip-select");
-    if (sel) sel.addEventListener("change", function () {
-      currentTripId = sel.value;
-      TripStore.setCurrentTripId(currentTripId);
-      selectedDay = 0; // 換行程時回到未分配
-      renderAll();
-    });
-
     var renameBtn = document.getElementById("trip-rename");
     if (renameBtn) renameBtn.addEventListener("click", function () {
       renaming = true;
@@ -176,12 +157,6 @@
         selectedDay = 0;
         renderAll();
       }
-    });
-
-    var newBtn = document.getElementById("trip-new");
-    if (newBtn) newBtn.addEventListener("click", function () {
-      creating = true;
-      renderManager();
     });
   }
 
@@ -582,5 +557,18 @@
       }
     }, 0);
   }
+
+  /* ============================================================
+   * 對外 hook：供側邊欄在「行程頁」就地切換行程（免整頁重載）。
+   * 側邊欄偵測到此物件時，改呼叫這裡而非導向 plan.html。
+   * ============================================================ */
+  window.PlanPage = {
+    selectTrip: function (tripId) {
+      currentTripId = tripId;
+      TripStore.setCurrentTripId(tripId);
+      selectedDay = 0; // 換行程回到未分配
+      renderAll();
+    }
+  };
 
 })();

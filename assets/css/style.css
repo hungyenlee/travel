@@ -70,6 +70,7 @@
 
   --color-primary:       #0d9488;   /* 品牌強調色（teal） */
   --color-primary-dark:  #0f766e;   /* 強調色深色（hover） */
+  --color-primary-bg:    #ccfbf1;   /* 強調色淺底（側邊欄選中項） */
 
   /* 地點類型／地圖標記色（全站共用，必填） */
   --color-attraction:    #2563eb;   /* 景點 = 藍 */
@@ -889,3 +890,263 @@ a.city-card:hover::before {
   color: var(--color-text-muted);
 }
 .plan-card__remove:hover { border-color: var(--color-restaurant); color: var(--color-restaurant); }
+
+/* ============================================================
+ * 全站側邊欄導覽（Sidebar navigation）
+ * ------------------------------------------------------------
+ * 由 assets/js/sidebar.js 動態填入 #app-sidebar；四頁共用。
+ * 桌機：固定於左側常駐；手機：收合成漢堡選單、點開由左側滑出抽屜。
+ * ============================================================ */
+
+/* 外層版面：側邊欄 + 內容並排 */
+.app-shell {
+  display: flex;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+.app-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+/* main 撐開，讓頁尾貼底 */
+.app-content > main { flex: 1 0 auto; }
+
+/* 側邊欄本體（桌機常駐、可自行捲動） */
+.sidebar {
+  flex: none;
+  width: 240px;
+  align-self: stretch;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+  z-index: 1100;
+}
+
+/* 品牌列（站名 + 手機關閉鈕） */
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border);
+}
+.sidebar__brand a {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--color-text);
+}
+.sidebar__brand a:hover { text-decoration: none; }
+.sidebar__close {
+  display: none;                 /* 僅手機顯示（見 media query） */
+  border: none;
+  background: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+/* 導覽區 */
+.sidebar__nav {
+  padding: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* 單一導覽連結（探索城市 / 我的行程 標籤） */
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  font: inherit;
+  font-size: var(--fs-base);
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+}
+.sidebar__link:hover { background: var(--color-bg); text-decoration: none; }
+.sidebar__link.is-active {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-bg);
+  font-weight: 600;
+}
+
+/* 「我的行程」列：標籤（連結）+ 展開鈕 並排 */
+.sidebar__item {
+  display: flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+}
+.sidebar__item:hover { background: var(--color-bg); }
+.sidebar__item.is-active { background: var(--color-primary-bg); }
+.sidebar__item.is-active .sidebar__link,
+.sidebar__item.is-active .sidebar__toggle {
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+.sidebar__item .sidebar__link { flex: 1; }
+.sidebar__item .sidebar__link:hover,
+.sidebar__item:hover .sidebar__link { background: none; }
+.sidebar__toggle {
+  flex: none;
+  padding: var(--space-sm);
+  margin-right: var(--space-xs);
+  font: inherit;
+  font-size: var(--fs-sm);
+  line-height: 1;
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.sidebar__toggle:hover { background: var(--color-border); }
+
+/* 展開後的行程清單（縮排 + 左側細線） */
+.sidebar__trips {
+  margin: 2px 0 var(--space-sm) var(--space-lg);
+  padding-left: var(--space-md);
+  border-left: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar__trip {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-sm);
+  font: inherit;
+  font-size: var(--fs-sm);
+  text-align: left;
+  color: var(--color-text);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sidebar__trip:hover { background: var(--color-bg); }
+.sidebar__trip.is-current {
+  background: var(--color-primary-bg);
+  color: var(--color-primary-dark);
+  font-weight: 600;
+}
+.sidebar__empty {
+  padding: var(--space-sm);
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+}
+
+/* 「＋新行程」按鈕與就地命名輸入 */
+.sidebar__new {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  width: 100%;
+  padding: var(--space-sm);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-align: left;
+  color: var(--color-primary);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.sidebar__new:hover { background: var(--color-bg); }
+.sidebar__new-form { display: flex; gap: var(--space-xs); padding: var(--space-xs) 0; }
+.sidebar__new-input {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--fs-sm);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.sidebar__new-submit {
+  flex: none;
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-primary);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.sidebar__new-submit:hover { background: var(--color-primary-dark); }
+
+/* 手機頂列（漢堡）與抽屜遮罩：桌機隱藏 */
+.mobile-topbar { display: none; }
+.sidebar-backdrop { display: none; }
+
+/* ---------- 手機版：側邊欄改為左側滑出抽屜 ---------- */
+@media (max-width: 767px) {
+  .app-shell { display: block; }
+
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: var(--shadow-sm);
+  }
+  .mobile-topbar__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--color-text);
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+  .mobile-topbar__title { font-size: var(--fs-lg); font-weight: 700; color: var(--color-text); }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.2s ease;
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.is-open { transform: translateX(0); }
+  .sidebar__close { display: inline-block; }
+
+  .sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: rgba(0, 0, 0, 0.35);
+  }
+  .sidebar-backdrop[hidden] { display: none; }
+}

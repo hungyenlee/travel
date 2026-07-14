@@ -9,15 +9,12 @@
   <!-- 全站共用設計系統 -->
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body>
-  <!-- 頁首（與其他頁一致；nav 多一顆「我的行程」） -->
-  <header class="site-header">
-    <div class="container">
-      <a class="site-title" href="index.html">台灣散步筆記</a>
-      <nav class="nav"><a href="index.html#cities">探索城市</a><a href="plan.html">我的行程</a></nav>
-    </div>
-  </header>
+<body data-page="plan">
+  <div class="app-shell">
+    <!-- 全站側邊欄：內容由 assets/js/sidebar.js 動態填入 -->
+    <aside class="sidebar" id="app-sidebar"></aside>
 
+    <div class="app-content">
   <main class="container">
     <!--
       以下皆為「插槽」容器，實際內容由 plan.js 依 TripStore 資料動態填入。
@@ -52,12 +49,15 @@
   <footer class="site-footer">
     <div class="container">台灣散步筆記 · 探索台灣各城市的景點與美食</div>
   </footer>
+    </div><!-- /.app-content -->
+  </div><!-- /.app-shell -->
 
-  <!-- 載入順序：Leaflet → 資料 → 共用工具 → 行程資料層 → 本頁邏輯 -->
+  <!-- 載入順序：Leaflet → 資料 → 共用工具 → 行程資料層 → 側邊欄 → 本頁邏輯 -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="data/data.js"></script>
   <script src="assets/js/shared.js"></script>
   <script src="assets/js/trip-store.js"></script>
+  <script src="assets/js/sidebar.js"></script>
   <script src="assets/js/plan.js"></script>
 </body>
 </html>
