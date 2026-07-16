@@ -259,6 +259,62 @@ var TripStore = (function () {
     }
   }
 
+  /* 把某地點搬到「第 targetDay 天的第 index 個位置」。
+   * 同天內重新排序、跨天搬移都走這一支（拖曳排序的唯一寫入路徑）。
+   *   - targetDay 夾在 0..trip.days（0 = 未分配）。
+   *   - index 夾在 0..該天目前地點數（把移動中的這筆先排除後計算）。
+   * 作法：先在扁平 items 陣列中取出該 item、改寫其 day，
+   *   再依「該天第 index 個」換算出扁平插入位置後 splice 回去。
+   * 資料模型不變：同一天的相對順序＝這些 item 在扁平陣列中的先後。
+   * 找不到 placeId 則無動作。 */
+  function moveItem(tripId, placeId, targetDay, index) {
+    var state = load();
+    var trip = findTrip(state, tripId);
+    if (!trip) return;
+
+    /* 取出移動中的 item（同時從陣列移除）。 */
+    var moving = null;
+    for (var i = 0; i < trip.items.length; i++) {
+      if (trip.items[i].placeId === placeId) {
+        moving = trip.items.splice(i, 1)[0];
+        break;
+      }
+    }
+    if (!moving) return;
+
+    /* 夾住目標天。 */
+    var d = Math.floor(Number(targetDay));
+    if (isNaN(d) || d < 0) d = 0;
+    if (d > trip.days) d = trip.days;
+    moving.day = d;
+
+    /* 該天現有 item（移動中的已排除）在扁平陣列中的位置。 */
+    var sameDayPos = [];
+    for (var j = 0; j < trip.items.length; j++) {
+      if (trip.items[j].day === d) sameDayPos.push(j);
+    }
+
+    /* 夾住 index 到 0..該天數量。 */
+    var idx = Math.floor(Number(index));
+    if (isNaN(idx) || idx < 0) idx = 0;
+    if (idx > sameDayPos.length) idx = sameDayPos.length;
+
+    /* 換算扁平插入位置：
+     *   idx < 數量 → 插在「該天第 idx 個」之前；
+     *   idx = 數量 → 插在該天最後一個之後（該天原本為空則放陣列末端）。 */
+    var insertAt;
+    if (idx < sameDayPos.length) {
+      insertAt = sameDayPos[idx];
+    } else if (sameDayPos.length > 0) {
+      insertAt = sameDayPos[sameDayPos.length - 1] + 1;
+    } else {
+      insertAt = trip.items.length;
+    }
+
+    trip.items.splice(insertAt, 0, moving);
+    save(state);
+  }
+
   /* 新增一天：days++，回傳新天數。 */
   function addDay(tripId) {
     var state = load();
@@ -316,6 +372,7 @@ var TripStore = (function () {
     removePlace: removePlace,
     togglePlace: togglePlace,
     setPlaceDay: setPlaceDay,
+    moveItem: moveItem,
     addDay: addDay,
     removeDay: removeDay,
     tripsContaining: tripsContaining
