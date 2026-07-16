@@ -714,33 +714,127 @@ a.city-card:hover::before {
 }
 .trip-manager__input { min-width: 12rem; }
 
-/* ---------- 天數選擇列 ---------- */
-.day-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-sm);
-  margin-block: var(--space-md);
+/* ---------- 分天區塊（規劃層清單） ---------- */
+.plan-day {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  overflow: hidden;
 }
-.day-tab {
-  padding: var(--space-xs) var(--space-md);
+.plan-day + .plan-day { margin-top: var(--space-md); }
+
+/* 段標題列：折疊鈕＋天名（切換地圖）＋移除這天 */
+.plan-day__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-xs);
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+.plan-day__toggle {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm);
+}
+.plan-day__toggle:hover { background: var(--color-border); }
+/* 展開/折疊三角（用邊框畫；預設朝下，折疊時朝右） */
+.plan-day__chevron {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid currentColor;
+  transition: transform 0.15s ease;
+}
+.plan-day.is-collapsed .plan-day__chevron { transform: rotate(-90deg); }
+
+.plan-day__label {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--color-text);
+  font-size: var(--fs-base);
+  font-weight: 700;
+  text-align: left;
+  border-radius: var(--radius-sm);
+}
+.plan-day__label:hover { background: var(--color-border); }
+.plan-day__count { font-size: var(--fs-sm); font-weight: 400; color: var(--color-text-muted); }
+
+/* 選中的天（＝地圖正在顯示的那天）：左側強調條＋標題著色 */
+.plan-day.is-selected { border-color: var(--color-primary); }
+.plan-day.is-selected .plan-day__head {
+  background: var(--color-primary-bg);
+  border-bottom-color: var(--color-primary);
+}
+.plan-day.is-selected .plan-day__label { color: var(--color-primary-dark); }
+
+.plan-day__remove {
+  flex: none;
+  padding: var(--space-xs) var(--space-sm);
   font-size: var(--fs-sm);
   cursor: pointer;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
+  border-radius: var(--radius-sm);
   background: var(--color-surface);
-  color: var(--color-text);
+  color: var(--color-text-muted);
 }
-.day-tab:hover { background: var(--color-bg); }
-.day-tab.is-active {
-  background: var(--color-primary);
+.plan-day__remove:hover { border-color: var(--color-warning-border); color: var(--color-warning); }
+
+.plan-day__body { padding: var(--space-sm); }
+.plan-day.is-collapsed .plan-day__body { display: none; }
+.plan-day__list { display: flex; flex-direction: column; gap: var(--space-sm); }
+.plan-day__list:empty { display: none; }
+
+/* 落點/空狀態提示：作為拖曳落點與空段的視覺 */
+.plan-day__drop {
+  margin-top: var(--space-sm);
+  padding: var(--space-md);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--color-text-muted);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+}
+.plan-day__list:empty + .plan-day__drop { margin-top: 0; }
+
+/* 加一天 */
+.plan-day-add {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-md);
+  padding: var(--space-sm);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+}
+.plan-day-add:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+/* 拖曳中：落點天區塊高亮 */
+.plan-day.is-drop-target { border-color: var(--color-primary); }
+.plan-day.is-drop-target .plan-day__body { background: var(--color-primary-bg); }
+.plan-day.is-drop-target .plan-day__drop {
   border-color: var(--color-primary);
-  color: #fff;
-}
-.day-tab--add { border-style: dashed; color: var(--color-text-muted); }
-.day-tab--remove {
-  border-color: var(--color-warning-border);
-  background: var(--color-warning-bg);
-  color: var(--color-warning);
+  color: var(--color-primary-dark);
 }
 
 /* ---------- 行程頁版面（桌機左地圖右清單／手機上下） ---------- */
@@ -752,18 +846,19 @@ a.city-card:hover::before {
 @media (min-width: 768px) {
   .plan-layout { flex-direction: row; align-items: flex-start; }
   .plan-map-pane {
-    flex: 1 1 55%;
+    flex: 1 1 62%;
+    min-width: 0;
     position: sticky;
     top: var(--space-md);
   }
-  .plan-list-pane { flex: 1 1 45%; min-width: 0; }
+  .plan-list-pane { flex: 1 1 38%; min-width: 0; }
 }
 
 /* 行程頁手機版：地圖高度收斂（比城市頁的 50vh 更矮），讓清單更快浮現；
- * 只限定在行程頁的地圖，不影響城市頁。桌機維持 60vh 並排。 */
+ * 只限定在行程頁的地圖，不影響城市頁。桌機地圖占比加大、拉高視野。 */
 .plan-map-pane .map { height: 38vh; }
 @media (min-width: 768px) {
-  .plan-map-pane .map { height: 60vh; }
+  .plan-map-pane .map { height: calc(100vh - 6rem); max-height: 78vh; min-height: 30rem; }
 }
 
 /* 該天無地點時的地圖區訊息（沿用 .map 尺寸，改成虛線空狀態外觀） */
@@ -807,15 +902,15 @@ a.city-card:hover::before {
 .plan-card {
   position: relative;
   display: flex;
-  gap: var(--space-md);
-  align-items: flex-start;
-  padding: var(--space-md);
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  padding: var(--space-sm);
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
 }
-.plan-card + .plan-card { margin-top: var(--space-md); }
 .plan-card.is-active {
   border-color: var(--color-pin);
   box-shadow: 0 0 0 2px var(--color-pin), var(--shadow-md);
@@ -856,6 +951,88 @@ a.city-card:hover::before {
   color: var(--color-text-muted);
 }
 .plan-card__remove:hover { border-color: var(--color-restaurant); color: var(--color-restaurant); }
+
+/* 拖曳握把（唯一拖曳起點） */
+.plan-card__handle {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: grab;
+  touch-action: none;               /* 觸控時交給自訂拖曳邏輯，禁用預設手勢 */
+  border-radius: var(--radius-sm);
+}
+.plan-card__handle:hover { background: var(--color-bg); color: var(--color-text); }
+.plan-card__handle:active { cursor: grabbing; }
+
+/* 縮圖略縮小以配合較窄的清單欄 */
+.plan-card__img { width: 72px; height: 54px; }
+
+/* ⋯ 更多操作 */
+.plan-card__menu-btn {
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  font-size: var(--fs-lg);
+  line-height: 1;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--color-text-muted);
+}
+.plan-card__menu-btn:hover { border-color: var(--color-border); background: var(--color-bg); }
+
+/* 展開的備援選單（改天／上下移／移除）；佔整行 */
+.plan-card__menu {
+  flex-basis: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--color-border);
+}
+.plan-card__move-label { display: inline-flex; align-items: center; gap: var(--space-xs); font-size: var(--fs-sm); color: var(--color-text-muted); }
+.plan-card__menu-row { display: inline-flex; flex-wrap: wrap; gap: var(--space-sm); margin-left: auto; }
+.plan-card__up,
+.plan-card__down {
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.plan-card__up:hover,
+.plan-card__down:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+/* 拖曳中：被拖的原卡＝佔位（虛線淡框）；ghost＝跟隨指標的浮動卡 */
+.plan-card.is-dragging {
+  opacity: 0.4;
+  border-style: dashed;
+  box-shadow: none;
+}
+.plan-card--ghost {
+  position: fixed;
+  z-index: 2000;
+  margin: 0;
+  pointer-events: none;
+  box-shadow: var(--shadow-md);
+  opacity: 0.95;
+  transform: rotate(1deg);
+}
+/* 拖曳期間全站禁止選字，指標為抓取態 */
+body.plan-dragging { cursor: grabbing; user-select: none; }
 
 /* ============================================================
  * 全站側邊欄導覽（Sidebar navigation）

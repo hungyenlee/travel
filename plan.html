@@ -41,10 +41,10 @@
     <!-- 總覽層：行程卡片列（plan.js 產生內容） -->
     <div id="trip-overview"></div>
 
-    <!-- 天數選擇列（未分配／第1天…／＋加一天／移除這天；plan.js 產生按鈕） -->
-    <div class="day-tabs" id="day-tabs"></div>
-
-    <!-- 桌機左地圖右清單並排；手機由上而下 -->
+    <!-- 桌機左地圖右清單並排；手機由上而下
+         規劃層清單改為「分天區塊」：每天一段（第1天…第N天／未分配），
+         段內卡片可拖曳握把排序、跨天搬移；天區塊標題點擊＝切換地圖顯示的那天。
+         內容由 plan.js 於 #plan-list 動態產生。 -->
     <div class="plan-layout" id="plan-layout">
       <!-- 地圖區 -->
       <div class="plan-map-pane">
